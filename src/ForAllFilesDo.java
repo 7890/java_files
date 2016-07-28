@@ -315,7 +315,10 @@ public class ForAllFilesDo
 	public String calcMD5(File _f) throws Exception
 	{
 		byte[] buffer = new byte[64000]; ///
-		MessageDigest md = MessageDigest.getInstance("MD5");
+		if(md==null)
+		{
+			MessageDigest md = MessageDigest.getInstance("MD5");
+		}//otherwise use existing
 		DigestInputStream dis = new DigestInputStream(new FileInputStream(_f), md);
 
 		try
