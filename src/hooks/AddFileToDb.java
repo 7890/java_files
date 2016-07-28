@@ -63,6 +63,7 @@ public class AddFileToDb implements ProcessFileHook
 		,boolean canExecute
 	) throws Exception
 	{
+		pstmt_insert_file.clearParameters();
 		pstmt_insert_file.setString(1,name);
 		pstmt_insert_file.setString(2,displayName);
 		pstmt_insert_file.setString(3,uri);
