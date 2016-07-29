@@ -1,9 +1,12 @@
 --COMMENT
 DROP SEQUENCE seq_tbl_file_id;
+CREATE SEQUENCE seq_tbl_file_id INCREMENT 1 START 0;
+
 DROP TABLE IF EXISTS tbl_file;
 --DELETE FROM tbl_file;
-CREATE SEQUENCE seq_tbl_file_id INCREMENT 1 START 0;
 --CREATE TABLE IF NOT EXISTS tbl_file;
+
+--=============================================================================
 CREATE TABLE tbl_file
 (
 	id INTEGER 	NOT NULL UNIQUE,
@@ -17,3 +20,23 @@ CREATE TABLE tbl_file
 	canwrite 	BOOLEAN NOT NULL,
 	canexecute 	BOOLEAN NOT NULL
 );
+
+--=============================================================================
+DROP VIEW v_file_1;
+CREATE VIEW v_file_1 AS
+	SELECT
+		*
+		,1 AS cnt
+	FROM
+		tbl_file;
+
+--=============================================================================
+DROP VIEW v_mimetype_distribution;
+CREATE VIEW v_mimetype_distribution AS
+	SELECT
+		mimetype
+		,sum(cnt) as total
+	FROM
+		v_file_1
+	GROUP BY
+		mimetype;
