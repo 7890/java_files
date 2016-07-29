@@ -80,6 +80,8 @@ init_db()
 	if [ -d "$DB_DATA_PATH" ]
 	then
 		echo "db exists"
+		echo "start database server now (./start_server.sh) in another terminal now and hit enter"
+		read a
 		return
 	fi
 
@@ -103,15 +105,15 @@ init_db()
 run()
 {
 	echo $JAVA -classpath "$DIR":"$build":"$MCKOI":"$TIKA" ForAllFilesDo .
-	$JAVA -classpath "$DIR":"$build":"$MCKOI":"$TIKA" ForAllFilesDo .
+#	$JAVA -classpath "$DIR":"$build":"$MCKOI":"$TIKA" ForAllFilesDo .
 
 #	java -verbose:class ... >/tmp/out.txt 2>&1
 #	cat /tmp/out.txt | grep "\[Loaded" | grep "\.jar" | rev | cut -d"/" -f1 | rev | sort | uniq | cut -d"]" -f1 >/tmp/jars.txt
 
 	echo ""
-	echo "test querying database"
+#	echo "test querying database"
 	echo "echo \"select count(*) from tbl_file;\"" \| $JAVA -classpath "$DIR":"$build":"$MCKOI":"$TIKA" ExecSQL
-	echo "select count(*) from tbl_file;" | $JAVA -classpath "$DIR":"$build":"$MCKOI":"$TIKA" ExecSQL
+#	echo "select count(*) from tbl_file;" | $JAVA -classpath "$DIR":"$build":"$MCKOI":"$TIKA" ExecSQL
 	echo ""
 	echo "query tbl_file manually (./start_gui.sh)"
 }
