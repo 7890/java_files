@@ -239,6 +239,11 @@ public class ForAllFilesDo
 				e_("detecting MIME type...");
 				contentType=mime_detector.probeContentType(Paths.get(_f.getAbsolutePath()));//nio path
 //				e_("MIME type: "+contentType);
+				if(contentType==null)
+				{
+//					e_("MIME type is unknown. setting to 'application/octet-stream'");
+					contentType="application/octet-stream";
+				}
 			}
 
 			if(filter_before_md5 && !filter_before_mime)
