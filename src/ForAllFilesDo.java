@@ -111,8 +111,17 @@ public class ForAllFilesDo
 			pfh=(ProcessFileHook)cons.newInstance();
 		}
 
-		//start recursion
-		recursiveListFilesStart(new File(args[0]));
+		File f=new File(args[0]);
+		if(!f.isDirectory() && args.length>1)
+		{
+			//add single file with display name
+			processFile(f,args[1]);
+		}
+		else
+		{
+			//start recursion
+			recursiveListFilesStart(f);
+		}
 
 		if(enable_hook)
 		{
@@ -218,81 +227,93 @@ public class ForAllFilesDo
 		return false;
 	}//end js_hook
 
+	//wrapper, display and original filename are the same
+//=============================================================================
+	public void processFile(File _f) throws Exception
+	{
+		processFile(_f,_f.getName());
+	}
+//=============================================================================
+	public void processFile(File _f, String originalFilename) throws Exception
+	{
+		String contentType=null;
+		String md5Sum=null;
+
+		//default true
+		boolean is_match=true;
+
+		if(filter_before_mime)
+		{
+			is_match=js_hook(_f,originalFilename,contentType,md5Sum,use_relative_uris);
+		}
+
+		if(enable_mime_type_detection && is_match)
+		{
+			e_("detecting MIME type...");
+			contentType=mime_detector.probeContentType(Paths.get(_f.getAbsolutePath()));//nio path
+//			e_("MIME type: "+contentType);
+			if(contentType==null)
+			{
+//				e_("MIME type is unknown. setting to 'application/octet-stream'");
+				contentType="application/octet-stream";
+			}
+		}
+
+		if(filter_before_md5 && !filter_before_mime)
+		{
+			is_match=js_hook(_f,originalFilename,contentType,md5Sum,use_relative_uris);
+		}
+
+		if(enable_md5_calculation && is_match)
+		{
+		e_("calculating MD5 sum...");
+			try
+			{
+				md5Sum=calcMD5(_f);
+//				e_("MD5 sum: "+md5Sum);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+		if(!filter_before_md5 && !filter_before_mime)
+		{
+			is_match=js_hook(_f,originalFilename,contentType,md5Sum,use_relative_uris);
+		}
+
+		if(enable_hook && is_match)
+		{
+			e_("running hook...");
+			pfh.processFile(_f,originalFilename,contentType,md5Sum,use_relative_uris);
+		}
+
+		if(is_match && enable_non_js_output)
+		{
+			String _path="";
+			if(use_relative_uris)
+			{
+			_path=_f.getPath();
+			}
+			else
+			{
+				_path=_f.getAbsolutePath();
+			}
+
+			e_(_path);
+		}
+		e_("file done (match: "+is_match+").");
+
+		counter++;
+	}//end processFile
+
 //=============================================================================
 	public void recursiveListFiles(File _f, int level) throws Exception
 	{
 		if(_f.isFile())
 		{
-			String contentType=null;
-			String md5Sum=null;
-
-			//default true
-			boolean is_match=true;
-
-			if(filter_before_mime)
-			{
-				is_match=js_hook(_f,_f.getName(),contentType,md5Sum,use_relative_uris);
-			}
-
-			if(enable_mime_type_detection && is_match)
-			{
-				e_("detecting MIME type...");
-				contentType=mime_detector.probeContentType(Paths.get(_f.getAbsolutePath()));//nio path
-//				e_("MIME type: "+contentType);
-				if(contentType==null)
-				{
-//					e_("MIME type is unknown. setting to 'application/octet-stream'");
-					contentType="application/octet-stream";
-				}
-			}
-
-			if(filter_before_md5 && !filter_before_mime)
-			{
-				is_match=js_hook(_f,_f.getName(),contentType,md5Sum,use_relative_uris);
-			}
-
-			if(enable_md5_calculation && is_match)
-			{
-				e_("calculating MD5 sum...");
-				try
-				{
-					md5Sum=calcMD5(_f);
-//					e_("MD5 sum: "+md5Sum);
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
-
-			if(!filter_before_md5 && !filter_before_mime)
-			{
-				is_match=js_hook(_f,_f.getName(),contentType,md5Sum,use_relative_uris);
-			}
-
-			if(enable_hook && is_match)
-			{
-				e_("running hook...");
-				pfh.processFile(_f,_f.getName(),contentType,md5Sum,use_relative_uris);
-			}
-
-			if(is_match && enable_non_js_output)
-			{
-				String _path="";
-				if(use_relative_uris)
-				{
-					_path=_f.getPath();
-				}
-				else
-				{
-					_path=_f.getAbsolutePath();
-				}
-
-				e_(_path);
-			}
-			e_("file done (match: "+is_match+").");
-
-			counter++;
+			processFile(_f);
 		}//end if is file
 		else
 		{
