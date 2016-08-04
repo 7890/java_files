@@ -1,4 +1,5 @@
 import util.*;
+import util.formatter.*;
 
 import java.io.*;
 import java.sql.*;
@@ -90,14 +91,11 @@ public class ExecSQL
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
 
-		while (rs.next())
-		{
-			for(int i=1;i<=columnCount;i++)
-			{
-				System.out.print(rs.getString(i)+" ");
-			}
-			System.out.println("");
-		}
+//		System.out.println((new CSVRSFormatter()).formatRS(rs));
+//		System.out.println((new HTMLRSFormatter(false)).formatRS(rs));
+//		System.out.println((new HTMLStyledRSFormatter(true)).formatRS(rs));
+		(new CSVRSFormatter()).formatRS(rs,new OutputStreamWriter(System.out));
+//		(new HTMLStyledRSFormatter(true)).formatRS(rs,new OutputStreamWriter(System.out));
 	}
 }//end class ExecSQL
 //EOF
