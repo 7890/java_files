@@ -7,6 +7,8 @@ CREATE SEQUENCE seq_tbl_file_link_id INCREMENT 1 START 0;
 
 DROP TABLE IF EXISTS tbl_file;
 DROP TABLE IF EXISTS tbl_file_link;
+DROP TABLE IF EXISTS tbl_basket;
+DROP TABLE IF EXISTS tbl_basket_file_link;
 --DELETE FROM tbl_file;
 --CREATE TABLE IF NOT EXISTS tbl_file;
 
@@ -35,6 +37,52 @@ CREATE TABLE tbl_file_link
 
 --INSERT INTO tbl_file_link (id,id_file,link) VALUES (0,0,'foo');
 --INSERT INTO tbl_file_link (id,id_file,link) VALUES (1,1,'bar');
+
+--=============================================================================
+CREATE TABLE tbl_basket
+(
+	id 		INTEGER	NOT NULL UNIQUE,
+	name 		STRING(256) NOT NULL,
+	link		STRING(256) UNIQUE
+);
+--INSERT INTO tbl_basket (id,name,link) VALUES (1,'my basket','foo');
+--INSERT INTO tbl_basket (id,name,link) VALUES (2,'my other basket','bar');
+
+--=============================================================================
+CREATE TABLE tbl_basket_file_link
+(
+	id 		INTEGER	NOT NULL UNIQUE,
+	id_basket	INTEGER NOT NULL,
+	id_file		INTEGER NOT NULL
+);
+--INSERT INTO tbl_basket_file_link (id,id_basket,id_file) VALUES (1,1,1);
+--INSERT INTO tbl_basket_file_link (id,id_basket,id_file) VALUES (2,1,2);
+--INSERT INTO tbl_basket_file_link (id,id_basket,id_file) VALUES (3,2,3);
+--INSERT INTO tbl_basket_file_link (id,id_basket,id_file) VALUES (4,2,4);
+
+--=============================================================================
+DROP VIEW v_basket_files;
+CREATE VIEW v_basket_files AS
+	SELECT
+		a.*
+		,b.id AS id_file
+		,b.filename
+		,b.displayname
+		,b.uri
+		,b.mimetype
+		,b.length
+		,b.md5sum
+		,b.lastmodified
+		,b.canwrite
+		,b.canexecute
+	FROM
+		tbl_basket AS a
+		,tbl_file AS b
+		,tbl_basket_file_link AS c
+	WHERE
+		a.id=c.id_basket
+	AND
+		b.id=c.id_file;
 
 --=============================================================================
 DROP VIEW v_file_link_simple;
