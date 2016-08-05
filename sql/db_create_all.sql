@@ -5,6 +5,12 @@ CREATE SEQUENCE seq_tbl_file_id INCREMENT 1 START 0;
 DROP SEQUENCE seq_tbl_file_link_id;
 CREATE SEQUENCE seq_tbl_file_link_id INCREMENT 1 START 0;
 
+DROP SEQUENCE seq_tbl_basket_id;
+CREATE SEQUENCE seq_tbl_basket_id INCREMENT 1 START 0;
+
+DROP SEQUENCE seq_tbl_basket_file_link_id;
+CREATE SEQUENCE seq_tbl_basket_file_link_id INCREMENT 1 START 0;
+
 DROP TABLE IF EXISTS tbl_file;
 DROP TABLE IF EXISTS tbl_file_link;
 DROP TABLE IF EXISTS tbl_basket;
@@ -15,7 +21,7 @@ DROP TABLE IF EXISTS tbl_basket_file_link;
 --=============================================================================
 CREATE TABLE tbl_file
 (
-	id 		INTEGER	NOT NULL UNIQUE,
+	id 		INTEGER	NOT NULL,
 	filename 	STRING(256) NOT NULL,
 	displayname 	STRING(256) NOT NULL,
 	uri 		STRING(1024) NOT NULL,
@@ -24,15 +30,18 @@ CREATE TABLE tbl_file
 	md5sum 		STRING(32),
 	lastmodified 	BIGINT NOT NULL,
 	canwrite 	BOOLEAN NOT NULL,
-	canexecute 	BOOLEAN NOT NULL
+	canexecute 	BOOLEAN NOT NULL,
+	UNIQUE (id)
 );
 
 --=============================================================================
 CREATE TABLE tbl_file_link
 (
-	id 		INTEGER NOT NULL UNIQUE,
+	id 		INTEGER NOT NULL,
 	id_file		INTEGER NOT NULL,
-	link		STRING(256) UNIQUE
+	link		STRING(256) NOT NULL,
+	UNIQUE (id),
+	UNIQUE (link)
 );
 
 --INSERT INTO tbl_file_link (id,id_file,link) VALUES (0,0,'foo');
@@ -41,9 +50,11 @@ CREATE TABLE tbl_file_link
 --=============================================================================
 CREATE TABLE tbl_basket
 (
-	id 		INTEGER	NOT NULL UNIQUE,
+	id 		INTEGER	NOT NULL,
 	name 		STRING(256) NOT NULL,
-	link		STRING(256) UNIQUE
+	link		STRING(256) NOT NULL,
+	UNIQUE (id),
+	UNIQUE (link)
 );
 --INSERT INTO tbl_basket (id,name,link) VALUES (1,'my basket','foo');
 --INSERT INTO tbl_basket (id,name,link) VALUES (2,'my other basket','bar');
@@ -51,9 +62,10 @@ CREATE TABLE tbl_basket
 --=============================================================================
 CREATE TABLE tbl_basket_file_link
 (
-	id 		INTEGER	NOT NULL UNIQUE,
+	id 		INTEGER	NOT NULL,
 	id_basket	INTEGER NOT NULL,
-	id_file		INTEGER NOT NULL
+	id_file		INTEGER NOT NULL,
+	UNIQUE(id)
 );
 --INSERT INTO tbl_basket_file_link (id,id_basket,id_file) VALUES (1,1,1);
 --INSERT INTO tbl_basket_file_link (id,id_basket,id_file) VALUES (2,1,2);
