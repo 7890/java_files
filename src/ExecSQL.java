@@ -26,6 +26,9 @@ public class ExecSQL
 
 	private static Connection db_connection;
 
+	private static String errorSepBegin="--ERR begin-------------";
+	private static String errorSepEnd=  "--ERR end---------------";
+
 //=============================================================================
 	public static void main(String[] args) throws Exception
 	{
@@ -33,10 +36,29 @@ public class ExecSQL
 		{
 			System.err.println("/!\\ could not load properties");
 		}
-
 		connectDb();
-		processStdIn();
+		System.err.println("unrequested mini how-to:");
+		System.err.println("lines starting with '--' are ignored (comments).");
+		System.err.println("statements must end with ';'.");
+		System.err.println("interactive session can be closed with 'ctrl+d'.");
+		System.err.println("reading SQL statements from stdin now:");
+
+		//don't throw up errors upwards for bogus statements (i.e. for interactive stdin session)
+		while(1==1)
+		{
+			try{
+				processStdIn();
+				break;
+			}catch (Exception e)
+			{
+				System.err.println("/!\\ error (bogus SQL statement?)");
+				System.err.println(errorSepBegin+"\n"+e.getMessage()+"\n"+errorSepEnd);
+				System.err.println("reading next statement from stdin now:");
+			}
+		}
+
 		close();
+		System.err.println("ExecSQL finished.");
 	}
 
 //=============================================================================
@@ -63,7 +85,7 @@ public class ExecSQL
 			//assume end of one sql statement
 			else if(line.endsWith(";"))
 			{
-				System.err.println("==================");
+				//System.err.println("==================");
 				//send to db
 				execQuery(sb.toString());
 				//clear for next statement
@@ -96,6 +118,7 @@ public class ExecSQL
 //		System.out.println((new HTMLStyledRSFormatter(true)).formatRS(rs));
 		(new CSVRSFormatter()).formatRS(rs,new OutputStreamWriter(System.out));
 //		(new HTMLStyledRSFormatter(true)).formatRS(rs,new OutputStreamWriter(System.out));
+		System.err.println("done.");
 	}
 }//end class ExecSQL
 //EOF

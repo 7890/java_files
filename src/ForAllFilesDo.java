@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import java.io.IOException;
 
 import java.nio.file.Path;
@@ -73,10 +75,11 @@ public class ForAllFilesDo
 //=============================================================================
 	public ForAllFilesDo(String[] args) throws Exception
 	{
-		if(args.length==0 || args.length>0 && (args[0].equals("-h") || args[0].equals("--help")))
+		if(args.length<1)
 		{
-			System.out.println("ForAllFilesDo Help (missing)"); ///
-			System.exit(0);
+			System.err.println("missing directory or file argument");
+			System.exit(1);
+			return;
 		}
 
 		if(!LProps.load(propertiesFileUri,this))
@@ -109,13 +112,32 @@ public class ForAllFilesDo
 			Class<?> c = Class.forName(hook_class_uri);
 			Constructor<?> cons = c.getConstructor();
 			pfh=(ProcessFileHook)cons.newInstance();
+
+			String[] args_stripped=new String[args.length-1];//
+			//public static void arraycopy(Object src, int srcPos, Object dest, int destPos, int length)
+			System.arraycopy(args, 0, args_stripped, 0, args.length-1);
+			pfh.setArgs(args);
 		}
 
-		File f=new File(args[0]);
-		if(!f.isDirectory() && args.length>1)
+		File f=new File(args[args.length-1]);
+		if(!f.isDirectory())
 		{
-			//add single file with display name
-			processFile(f,args[1]);
+			//read displayname from stdin
+			BufferedReader buffered_reader=new BufferedReader(new InputStreamReader(System.in));
+			System.err.println("enter display name (enter to use original filename): ");
+
+			String line;
+			line = buffered_reader.readLine();
+			if(line==null || line.equals(""))
+			{
+				//add single file, use original filename
+				processFile(f);
+			}
+			else
+			{
+				//add single file with display name
+				processFile(f,line);
+			}
 		}
 		else
 		{
@@ -127,7 +149,7 @@ public class ForAllFilesDo
 		{
 			pfh.close();
 		}
-	}
+	}//end ForAllFilesDo constructor
 
 //=============================================================================
 	public static void main(String[] args) throws Exception
@@ -234,7 +256,7 @@ public class ForAllFilesDo
 		processFile(_f,_f.getName());
 	}
 //=============================================================================
-	public void processFile(File _f, String originalFilename) throws Exception
+	public void processFile(File _f, String displayName) throws Exception
 	{
 		String contentType=null;
 		String md5Sum=null;
@@ -244,7 +266,7 @@ public class ForAllFilesDo
 
 		if(filter_before_mime)
 		{
-			is_match=js_hook(_f,originalFilename,contentType,md5Sum,use_relative_uris);
+			is_match=js_hook(_f,displayName,contentType,md5Sum,use_relative_uris);
 		}
 
 		if(enable_mime_type_detection && is_match)
@@ -261,7 +283,7 @@ public class ForAllFilesDo
 
 		if(filter_before_md5 && !filter_before_mime)
 		{
-			is_match=js_hook(_f,originalFilename,contentType,md5Sum,use_relative_uris);
+			is_match=js_hook(_f,displayName,contentType,md5Sum,use_relative_uris);
 		}
 
 		if(enable_md5_calculation && is_match)
@@ -280,13 +302,13 @@ public class ForAllFilesDo
 
 		if(!filter_before_md5 && !filter_before_mime)
 		{
-			is_match=js_hook(_f,originalFilename,contentType,md5Sum,use_relative_uris);
+			is_match=js_hook(_f,displayName,contentType,md5Sum,use_relative_uris);
 		}
 
 		if(enable_hook && is_match)
 		{
 			e_("running hook...");
-			pfh.processFile(_f,originalFilename,contentType,md5Sum,use_relative_uris);
+			pfh.processFile(_f,displayName,contentType,md5Sum,use_relative_uris);
 		}
 
 		if(is_match && enable_non_js_output)
