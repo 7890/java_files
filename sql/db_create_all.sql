@@ -111,7 +111,7 @@ CREATE VIEW v_file_link_simple AS
 		tbl_file_link AS a
 		,tbl_file AS b
 	WHERE
-		a.id=b.id;
+		a.id_file=b.id;
 
 --=============================================================================
 DROP VIEW v_file_1;
