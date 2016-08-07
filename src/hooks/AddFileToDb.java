@@ -32,6 +32,7 @@ public class AddFileToDb implements ProcessFileHook
 
 	private PreparedStatement ps_next_file_id;
 	private PreparedStatement ps_insert_file;
+	private PreparedStatement ps_insert_file_link;
 	private PreparedStatement ps_insert_basket;
 	private PreparedStatement ps_insert_basket_file_link;
 	private PreparedStatement ps_find_basket_id_by_link;
@@ -82,8 +83,15 @@ public class AddFileToDb implements ProcessFileHook
 		createBasket.setRequired(false);
 		options.addOption(createBasket);
 
-		///dummy
+		createBasket=new Option("N","baket-link",true,"use given link for basket creation (only along with -n)");
+		createBasket.setRequired(false);
+		options.addOption(createBasket);
+
 		createDownloadLink=new Option("l","link",false,"create random download link per file");
+		createDownloadLink.setRequired(false);
+		options.addOption(createDownloadLink);
+
+		createDownloadLink=new Option("L","link",true,"use given link for download link cration");
 		createDownloadLink.setRequired(false);
 		options.addOption(createDownloadLink);
 
@@ -136,19 +144,35 @@ public class AddFileToDb implements ProcessFileHook
 			throw new Exception("options -b and -n can't be used combined.");
 		}
 
+		if(cmd.hasOption("N") && !cmd.hasOption("n"))
+		{
+			throw new Exception("option -N can only be used along -n");
+		}
+
+		if(cmd.hasOption("L") && cmd.hasOption("l"))
+		{
+			throw new Exception("options -l and -L can't be used combined.");
+		}
+
 		String link="";
 		if(cmd.hasOption("n"))
 		{
 			System.err.println("creating new basket with name '"+cmd.getOptionValue("n")+"'");
 
-			///dummy, create link
-			link="foo"+System.currentTimeMillis();
+			if(cmd.hasOption("N"))
+			{
+				link=cmd.getOptionValue("N");
+			}
+			else
+			{
+				///dummy, create link
+				link="foo"+System.currentTimeMillis();
+			}
 
 			//create basket
 			ps_insert_basket_(cmd.getOptionValue("n"),link);
 		}
-
-		if(cmd.hasOption("b"))
+		else if(cmd.hasOption("b"))
 		{
 			link=cmd.getOptionValue("b");
 			System.err.println("adding files to basket link '"+link+"'");
@@ -173,6 +197,12 @@ public class AddFileToDb implements ProcessFileHook
 			"INSERT INTO tbl_file "
 			+"(id,filename,displayname,uri,mimetype,length,md5sum,lastmodified,canwrite,canexecute) "
 			+"VALUES (?,?,?,?,?,?,?,?,?,?);"
+		);
+
+		ps_insert_file_link = db_connection.prepareStatement(
+			"INSERT INTO tbl_file_link "
+			+"(id,id_file,link) "
+			+"VALUES (NEXTVAL('seq_tbl_file_link_id'),?,?);"
 		);
 
 		ps_insert_basket = db_connection.prepareStatement(
@@ -230,6 +260,21 @@ public class AddFileToDb implements ProcessFileHook
 		System.err.println("executing query...");
 
 		ResultSet rs = ps_insert_file.executeQuery();
+	}
+
+//=============================================================================
+	private void ps_insert_file_link_(
+		int id_file
+		,String link
+	) throws Exception
+	{
+		ps_insert_file_link.clearParameters();
+		ps_insert_file_link.setInt(1,id_file);
+		ps_insert_file_link.setString(2,link);
+
+		System.err.println("executing query...");
+
+		ResultSet rs = ps_insert_file_link.executeQuery();
 	}
 
 //=============================================================================
@@ -304,6 +349,17 @@ public class AddFileToDb implements ProcessFileHook
 			,_f.canWrite()
 			,_f.canExecute()
 		);
+
+		if(cmd.hasOption("l"))
+		{
+			///dummy, create link
+			String link="foo"+System.currentTimeMillis();
+			ps_insert_file_link_(file_id,link);
+		}
+		else if(cmd.hasOption("L"))
+		{
+			ps_insert_file_link_(file_id,cmd.getOptionValue("L"));
+		}
 
 		if(cmd.hasOption("b") || cmd.hasOption("n"))
 		{
