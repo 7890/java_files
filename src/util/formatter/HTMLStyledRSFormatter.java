@@ -31,7 +31,6 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 		int columnCount = rsmd.getColumnCount();
 
 		StringBuffer out=new StringBuffer("");
-		writeOut("<div class=\"table\">\n");
 
 		if(complete_html)
 		{
@@ -45,6 +44,8 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 			writeOut("</style>\n");
 			writeOut("</head>\n");
 		}
+
+		writeOut("<div class=\"table\">\n");
 
 		//table header
 		writeOut("<div class=\"row header\">\n");
