@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML><HEAD><TITLE>Database Control API</TITLE>
+<link REL="shortcut icon" HREF="/favicon.ico" TYPE="image/x-icon">
+</HEAD>
+<body marginwidth="6" marginheight="0" leftmargin="6" rightmargin="6" topmargin="0" text="#000000" bgcolor="#FFFFFF" link="#0060A0" vlink="#001060" alink="#B00040">
+<!-- Title Header -->
+
+<table CELLSPACING="5" CELLPADDING="0" WIDTH="100%" >
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td><a href="index.html"><img SRC="mchead3_tc.gif" height="54" width="480" border="0" alt="Mckoi SQL Database"></a></td>
+</tr>
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td>
+<font face="Arial" size="-1"><a href="index.html">Home</a> / <a href="docindex.html">Documentation</a> / <a href="FAQ.html">FAQ</a> / <a href="index.html#Support">Support</a> / <a href="index.html#Download">Download</a></font><br><b><font size="+1" color="#0060A0"> Database Control API</font></b></td>
+</tr>
+</table>
+
+<!-- End Title Header -->
+<h3>Database Control API Index</h3>
+<blockquote><ol>
+<li><a href='#1'>Control API Introduction</a><br>
+<li><a href='#2'>The Basics - Starting and Closing a database session</a><br>
+<li><a href='#3'>Binding a TCP/IP JDBC server to a database session</a><br>
+<li><a href='#4'>Advanced uses of the Control API</a><br>
+</ol></blockquote>
+<hr size='1'>
+<a name='1'></a><br><font size='+1' face='Arial' color='#0060A0'>1. Control API Introduction</font>
+<blockquote>
+<p> The Control API provides a programmatic way to configure and manage one or more
+    Mckoi database sessions within a Java environment.  It is intended for developers who need
+    more control or access to a Mckoi database session than the JDBC API alone can provide.
+    It is also useful to developers who are writing database access APIs to Mckoi.
+    The Control API is only available in Mckoi SQL Database.
+  </p>
+<p> This section covers common uses of the Control API.  It is recommended that developers
+    who wish to become more familiar with this API generate the JavaDoc documentation.
+    The API package is <code>com.mckoi.database.control</code>.
+  </p>
+</blockquote>
+<br>
+<a name='2'></a><br><font size='+1' face='Arial' color='#0060A0'>2. The Basics - Starting and Closing a database session</font>
+<blockquote>
+<p> The basic steps to using the Control API are as follows;
+    <ol><li>Create a database configuration - a <code>com.mckoi.database.control.DBConfig</code> object.</li>
+        <li>Get the <code>com.mckoi.database.control.DBController</code> object.</li>
+        <li>Use the <code>DBController</code> to either create or start a database session -
+            a <code>com.mckoi.database.control.DBSystem</code> object.</li>
+        <li>Use the <code>DBSystem</code> object to access/modify the database.  You can use
+            <code>DBSystem</code> to create JDBC connections, or access the database in other
+            ways.</li>
+        <li>Close the <code>DBSystem</code> object to disconnect the session and release
+            the resources in the Java environment used by the session.</li>
+    </ol>
+  </p>
+<p> Note that it is not necessary to base your database configuration on a 'db.conf'
+    file when using the Control API.  It is possible to specify the database configuration
+    directly from Java code.
+  </p>
+<p> Below is an example of using the Control API to detect the existence of a database and
+    if it's not found create it, or connect to it if it does exist.  The example also
+    creates a JDBC connection and executes a simple query.
+  </p>
+<p>
+  
+<table border='0' cellpadding='5'><tr><td bgcolor='#F4F4F4'><pre><font color="0000ff"><strong>import com.mckoi.database.control.*;</strong></font>
+<font color="0000ff"><strong>import java.sql.*;</strong></font>
+....
+
+  <font color="#444444">// First create a database configuration.  We use this to</font>
+  <font color="#444444">// set database properties such as if the database should</font>
+  <font color="#444444">// be case insensitive, read only, etc.</font>
+  <font color="#2040a0">DefaultDBConfig</font> <font color="#2040a0">config</font> <font color="4444FF">=</font> <strong>new</strong> <font color="#2040a0">DefaultDBConfig</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Set the path of the database in the file system.</font>
+  <font color="#2040a0">config</font>.<font color="#2040a0">setDatabasePath</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;c:<font color="#77dd77">\\</font>my_mckoi_database<font color="#77dd77">\\</font>&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Set the path of the logs in the file system.</font>
+  <font color="#2040a0">config</font>.<font color="#2040a0">setLogPath</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;c:<font color="#77dd77">\\</font>my_mckoi_database<font color="#77dd77">\\</font>logs<font color="#77dd77">\\</font>&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+
+  <font color="#444444">// Get the controller interface</font>
+  <font color="#2040a0">DBController</font> <font color="#2040a0">control</font> <font color="4444FF">=</font> <font color="#2040a0">DBController</font>.<font color="#2040a0">getDefault</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+
+  <font color="#444444">// This will be the database session</font>
+  <font color="#2040a0">DBSystem</font> <font color="#2040a0">session</font><font color="4444FF">;</font>
+  <font color="#444444">// Does the database exist already?</font>
+  <strong>if</strong> <font color="4444FF"><strong>(</strong></font><font color="#2040a0">control</font>.<font color="#2040a0">databaseExists</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">config</font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#444444">// If it exists then start the database session</font>
+    <font color="#2040a0">session</font> <font color="4444FF">=</font> <font color="#2040a0">control</font>.<font color="#2040a0">startDatabase</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">config</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>else</strong> <font color="4444FF"><strong>{</strong></font>
+    <font color="#444444">// If it doesn't exist then create the database.</font>
+    <font color="#444444">// Note we need to set the admin username and password.</font>
+    <font color="#2040a0">session</font> <font color="4444FF">=</font> <font color="#2040a0">control</font>.<font color="#2040a0">createDatabase</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">config</font>, <font color="#008000">&quot;user&quot;</font>, <font color="#008000">&quot;pass&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <font color="#444444">// Create a local JDBC connection to the database (logging in</font>
+  <font color="#444444">// as the given username and password).</font>
+  <font color="#2040a0">Connection</font> <font color="#2040a0">connection</font> <font color="4444FF">=</font> <font color="#2040a0">session</font>.<font color="#2040a0">getConnection</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;user&quot;</font>, <font color="#008000">&quot;pass&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+
+  <font color="#444444">// ... do something with the database through the JDBC</font>
+  <font color="#444444">//     interface.</font>
+  
+  <font color="#444444">// For example, lists the tables in the database.</font>
+  <font color="#2040a0">ResultSet</font> <font color="#2040a0">all_tables</font> <font color="4444FF">=</font>
+       <font color="#2040a0">connection</font>.<font color="#2040a0">createStatement</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font>.<font color="#2040a0">executeQuery</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;SHOW TABLES&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <strong>while</strong> <font color="4444FF"><strong>(</strong></font><font color="#2040a0">all_tables</font>.<font color="#2040a0">next</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">System</font>.<font color="#2040a0">out</font>.<font color="#2040a0">println</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">all_tables</font>.<font color="#2040a0">getString</font><font color="4444FF"><strong>(</strong></font><font color="#FF0000">1</font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+
+  <font color="#444444">// ... when finished remember to close the connection and</font>
+  <font color="#444444">//     the database       </font>
+       
+  <font color="#444444">// Close the JDBC connection.</font>
+  <font color="#2040a0">connection</font>.<font color="#2040a0">close</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Close the database session (frees up the resources)</font>
+  <font color="#2040a0">session</font>.<font color="#2040a0">close</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+
+</pre></td></tr></table>
+  
+  </p>
+<p> The Control API provides a number of other important features.  The API
+    allows for the creation of multiple light-weight JDBC connections to a
+    single session, and for an application to connect to multiple databases in the
+    file system from inside a single Java environment.  The Control API is also
+    multi-thread safe so an application can construct and talk to multiple JDBC
+    connections in a multi-threaded application.  
+  </p>
+</blockquote>
+<br>
+<a name='3'></a><br><font size='+1' face='Arial' color='#0060A0'>3. Binding a TCP/IP JDBC server to a database session</font>
+<blockquote>
+<p> The Control API can be used to create one or more JDBC servers on the local
+    machine.  After a JDBC server has started a Mckoi JDBC client can remotely connect
+    to the database session.
+  </p>
+<p> The code below demonstrates starting a TCP/IP JDBC server on port 9888 of the local
+    machine bound to the given database session.
+  </p>
+<p>
+<table border='0' cellpadding='5'><tr><td bgcolor='#F4F4F4'><pre>  <font color="#2040a0">DBSystem</font> <font color="#2040a0">session</font> <font color="4444FF">=</font> ....
+
+  <font color="#444444">// Construct the TCP/IP JDBC Server on port 9888</font>
+  <font color="#2040a0">TCPJDBCServer</font> <font color="#2040a0">server</font> <font color="4444FF">=</font> <strong>new</strong> <font color="#2040a0">TCPJDBCServer</font><font color="4444FF"><strong>(</strong></font><font color="#2040a0">session</font>, <font color="#FF0000">9888</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Start the server - returns immediately.</font>
+  <font color="#2040a0">server</font>.<font color="#2040a0">start</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font></pre></td></tr></table> 
+  
+  </p>
+<p> Connecting to the database session remotely is then simply a matter of supplying the correct
+    JDBC URL in the client application.  For example, if the local machine address is
+    <code>mydatabase.davescomputer.com</code> and you are using the code above, the JDBC URL to
+    connect to the database would be <code>mckoi:jdbc://mydatabase.davescomputer.com:9888/</code>.
+  </p>
+</blockquote>
+<br>
+<a name='4'></a><br><font size='+1' face='Arial' color='#0060A0'>4. Advanced uses of the Control API</font>
+<blockquote>
+<p> Low-level access to a database system is possible through the Control API.  The API
+    exposes the <code>com.mckoi.database.Database</code> object that allows direct access to
+    the core database system facilities.  The <code>com.mckoi.database.Database</code> object
+    can be used to create connections and modify/access data in the database bypassing all
+    higher level SQL parsing/planning and evaluation.
+  </p>
+<p> It is recommended that a developer generates the JavaDoc documentation or reads
+    the source code if they wish to become familiar with the core design.  A useful
+    example of using the low-level access facilities is shown below.  The example generates
+    a backup copy of the database while it is still active.
+  </p>
+<p>
+
+<table border='0' cellpadding='5'><tr><td bgcolor='#F4F4F4'><pre><font color="0000ff"><strong>import java.io.*;</strong></font>
+....
+
+  <font color="#2040a0">DBSystem</font> <font color="#2040a0">session</font> <font color="4444FF">=</font> ....
+  
+  <font color="#2040a0">session</font>.<font color="#2040a0">getDatabase</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font>.<font color="#2040a0">liveCopyTo</font><font color="4444FF"><strong>(</strong></font>
+               <strong>new</strong> <font color="#2040a0">File</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;/home/databases/mckoi_backups/1/&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font></pre></td></tr></table> 
+
+
+  </p>
+</blockquote>
+<br>
+<table width="100%" cellspacing="5"><tr><td><hr size="1">
+<div align="left"><font size=-1>Last Updated: Mon Aug 16 00:27:19 PDT 2004<br></font></div>
+<div align="left"><font size=-1>Mckoi SQL Database Copyright &copy; 2000 - 2004 Diehl and Associates, Inc.  All rights reserved.<br></font></div>
+<br>
+</td></tr></table></BODY></HTML>

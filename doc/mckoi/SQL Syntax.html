@@ -1,0 +1,504 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML><HEAD><TITLE>SQL Syntax</TITLE>
+<link REL="shortcut icon" HREF="/favicon.ico" TYPE="image/x-icon">
+</HEAD>
+<body marginwidth="6" marginheight="0" leftmargin="6" rightmargin="6" topmargin="0" text="#000000" bgcolor="#FFFFFF" link="#0060A0" vlink="#001060" alink="#B00040">
+<!-- Title Header -->
+
+<table CELLSPACING="5" CELLPADDING="0" WIDTH="100%" >
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td><a href="index.html"><img SRC="mchead3_tc.gif" height="54" width="480" border="0" alt="Mckoi SQL Database"></a></td>
+</tr>
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td>
+<font face="Arial" size="-1"><a href="index.html">Home</a> / <a href="docindex.html">Documentation</a> / <a href="FAQ.html">FAQ</a> / <a href="index.html#Support">Support</a> / <a href="index.html#Download">Download</a></font><br><b><font size="+1" color="#0060A0"> SQL Syntax</font></b></td>
+</tr>
+</table>
+
+<!-- End Title Header -->
+<h3>SQL Syntax Index</h3>
+<blockquote><ol>
+<li><a href='#1'>SQL Syntax Introduction</a><br>
+<li><a href='#2'>CREATE TABLE syntax</a><br>
+<li><a href='#3'>ALTER TABLE syntax</a><br>
+<li><a href='#4'>DROP TABLE syntax</a><br>
+<li><a href='#5'>CREATE VIEW syntax</a><br>
+<li><a href='#6'>DROP VIEW syntax</a><br>
+<li><a href='#7'>CREATE SEQUENCE syntax</a><br>
+<li><a href='#8'>DROP SEQUENCE syntax</a><br>
+<li><a href='#9'>COMPACT TABLE syntax</a><br>
+<li><a href='#10'>CREATE SCHEMA syntax</a><br>
+<li><a href='#11'>DROP SCHEMA syntax</a><br>
+<li><a href='#12'>INSERT syntax</a><br>
+<li><a href='#13'>DELETE syntax</a><br>
+<li><a href='#14'>UPDATE syntax</a><br>
+<li><a href='#15'>SELECT syntax</a><br>
+<li><a href='#16'>COMMIT and ROLLBACK syntax</a><br>
+<li><a href='#17'>CREATE USER, ALTER USER and DROP USER syntax</a><br>
+<li><a href='#18'>GRANT/REVOKE syntax</a><br>
+<li><a href='#19'>SET syntax</a><br>
+<li><a href='#20'>DESCRIBE syntax</a><br>
+<li><a href='#21'>SHOW syntax</a><br>
+<li><a href='#22'>SHUTDOWN syntax</a><br>
+</ol></blockquote>
+<hr size='1'>
+<a name='1'></a><br><font size='+1' face='Arial' color='#0060A0'>1. SQL Syntax Introduction</font>
+<blockquote>
+<p> This section is a reference for the SQL grammar that Mckoi SQL Database
+  supports.  Mckoi SQL Database supports a subset of entry level ANSI SQL-92.
+  This section is not intended to be a tutorial for learning SQL.  For SQL
+  books and online tutorials see the links section on the home page.
+  </p>
+</blockquote>
+<br>
+<a name='2'></a><br><font size='+1' face='Arial' color='#0060A0'>2. CREATE TABLE syntax</font>
+<blockquote>
+<p><pre><b>CREATE TABLE [ IF NOT EXISTS ] table_name
+  ( column_declare1, column_declare2, constraint_declare1, ... )
+  </b></pre></p>
+<p><pre><b>column_declare ::= column_name type [ DEFAULT expression ]
+  [ NULL | NOT NULL ] [ INDEX_BLIST | INDEX_NONE ] </b></pre></p>
+<p><pre><b>type ::= BIT | REAL | CHAR | TEXT | DATE | TIME |
+  FLOAT | BIGINT | DOUBLE | STRING | BINARY | NUMERIC |
+  DECIMAL | BOOLEAN | TINYINT | INTEGER | VARCHAR |
+  SMALLINT | VARBINARY | TIMESTAMP | LONGVARCHAR |
+  JAVA_OBJECT | LONGVARBINARY </b></pre></p>
+<p><pre><b>constraint_declare :: = [ CONSTRAINT constraint_name ]
+  PRIMARY KEY ( col1, col2, ... ) |
+  FOREIGN KEY ( col1, col2, ... ) REFERENCES f_table [ ( col1, col2, ... ) ]
+             [ ON UPDATE triggered_action ] [ ON DELETE triggered_action ] |
+  UNIQUE ( col1, col2, ... ) |
+  CHECK ( expression )
+  [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
+  [ NOT DEFERRABLE | DEFERRABLE ]</b></pre></p>
+<p><pre><b>triggered_action :: =
+  NO ACTION | SET NULL | SET DEFAULT | CASCADE
+  </b></pre></p>
+<p> When declaring string or binary column types the maximum size
+  must be specified.  The following example declares a string column that
+  can grow to a maximum of 100 characters,
+  </p>
+<p><pre><font color="#803050">CREATE TABLE Table ( str_col VARCHAR(100) )</font></pre></p>
+<p> When handling strings the database will only allocate as much storage
+  space as the string uses up.  If a 10 character string is stored in
+  <code>str_col</code> then only space for 10 characters will be allocated in
+  the database.  So if you need a column that can store a string of any
+  size, use an arbitrarily large number when declaring the column.  Mckoi
+  SQL Database does not use a fixed size storage mechanism when storing
+  variable length column data.
+  </p>
+<p> <code><font color="#803050">JAVA_OBJECT</font></code> is a column type that can contain serializable
+  Java objects.  The <code><font color="#803050">JAVA_OBJECT</font></code> type has an optional Java class
+  definition that is used for runtime class constraint checking.  The
+  following example demonstrates creating a <code><font color="#803050">JAVA_OBJECT</font></code>
+  column.
+  </p>
+<p><pre><font color="#803050">CREATE TABLE ObjectTable (
+        obj_id NUMERIC, obj JAVA_OBJECT(java.awt.Point))</font></pre></p>
+<p>If the Java class is not specified the column defaults to
+  <code>java.lang.Object</code> which effectively means any type of
+  serializable Java object can be kept in the column.
+  </p>
+<p> String types may have a <code><font color="#803050">COLLATE</font></code> clause that changes the
+  collation ordering of the string based on a language.  For example, the
+  folling statement creates a string that can store and order Japanese text;
+  </p>
+<p><pre><font color="#803050">CREATE TABLE InternationalTable (
+        japanese_text VARCHAR(4000) COLLATE 'jaJP')</font></pre></p>
+<p> The 'jaJP' is an ISO localization code for the Japanese language in Japan.
+  Other locale codes can be found in the documentation to <code>java.text.Collate</code>.
+  </p>
+<p> Unique, primary/foreign key and check integrity constraints can be
+  defined in the <code><font color="#803050">CREATE TABLE</font></code> statement.  The following is
+  an example of defining a table with integrity constraints.
+  </p>
+<p><pre><font color="#803050">CREATE TABLE Customer (
+  number VARCHAR(40)  NOT NULL,
+  name   VARCHAR(100) NOT NULL,
+  ssn    VARCHAR(50)  NOT NULL,
+  age    INTEGER      NOT NULL,
+    
+  CONSTRAINT cust_pk PRIMARY KEY (number),
+  UNIQUE ( ssn ),              // (An anonymous constraint)
+  CONSTRAINT age_check CHECK (age >= 0 AND age < 200)
+)
+  </font></pre></p>
+</blockquote>
+<br>
+<a name='3'></a><br><font size='+1' face='Arial' color='#0060A0'>3. ALTER TABLE syntax</font>
+<blockquote>
+<p><pre><b>ALTER TABLE table_name ADD [COLUMN] column_declare
+ALTER TABLE table_name ADD constraint_declare
+ALTER TABLE table_name DROP [COLUMN] column_name 
+ALTER TABLE table_name DROP CONSTRAINT constraint_name
+ALTER TABLE table_name DROP PRIMARY KEY
+ALTER TABLE table_name ALTER [COLUMN] column_name SET default_expr 
+ALTER TABLE table_name ALTER [COLUMN] column_name DROP DEFAULT</b></pre></p>
+<p><pre><b>ALTER CREATE TABLE .... </b></pre></p>
+<p> <code><font color="#803050">ALTER</font></code> is used to add / remove / modify the columns and integrity
+  constraints of a table.  The <code><font color="#803050">ADD [COLUMN]</font></code> form adds a new column
+  definition to the table (using the same column declaration syntax in the
+  <code><font color="#803050">CREATE</font></code> command).  The <code><font color="#803050">DROP [COLUMN]</font></code> form drops the
+  column with the name from the table.  <code><font color="#803050">ALTER [COLUMN] column_name SET default_expr</font></code>
+  alters the default value for the column.  <code><font color="#803050">ALTER [COLUMN] column_name DROP DEFAULT</font></code>
+  removes the default value set for the column.
+  </p>
+<p> The following example adds a new column to a table;
+  </p>
+<p><code><font color="#803050">ALTER TABLE Order ADD notes VARCHAR(60000) DEFAULT 'n/a'</font></code></p>
+<p> <code><font color="#803050">ADD constraint_declare</font></code> is used to define a new integrity constraint
+  on a table (using the same constraint declaration syntax in the <code><font color="#803050">CREATE</font></code>
+  command).  <code><font color="#803050">DROP CONSTRAINT</font></code> is used to drop a named constraint from a table.
+  </p>
+<p> The other form of this statement is <code><font color="#803050">ALTER CREATE TABLE ...</font></code>.
+  This alters the table to the specification of the given <code><font color="#803050">CREATE</font></code>
+  statement.  Any columns that are in the original table are not lost provided the
+  column name is in the new table specification.  Any columns that were not in the
+  original table are set to the default value.
+  </p>
+<p> The following example demonstrates this form of <code><font color="#803050">ALTER</font></code> statement;
+  </p>
+<p><pre><font color="#803050">ALTER CREATE TABLE table
+  ( col1 INTEGER NOT NULL UNIQUE,
+    col2 NUMERIC,
+    col3 VARCHAR(90000) )</font></pre></p>
+<p> The <code><font color="#803050">ALTER CREATE TABLE ...</font></code> syntax is an extension to the SQL-92
+  standard.
+  </p>
+</blockquote>
+<br>
+<a name='4'></a><br><font size='+1' face='Arial' color='#0060A0'>4. DROP TABLE syntax</font>
+<blockquote>
+<p><pre><b>DROP TABLE [ IF EXISTS ] table_name1, table_name2, .... </b></pre></p>
+<p> Removes the table(s) from the database.  The <code><font color="#803050">IF EXISTS</font></code> clause
+  will drop the table only if it exists.  If this clause is not present an error
+  is generated if the table does not exist.  Any data that was in a dropped table is
+  lost so use with care.
+  </p>
+</blockquote>
+<br>
+<a name='5'></a><br><font size='+1' face='Arial' color='#0060A0'>5. CREATE VIEW syntax</font>
+<blockquote>
+<p><pre><b>CREATE VIEW table_name [ ( column_name1, column_name2, ... ) ]
+  AS SELECT ...</b></pre></p>
+<p> Creates a new view.  A view is a virtual table based on the result of a <code><font color="#803050">SELECT</font></code>
+  query.  The content of a view may reference any number of other tables and views.
+  </p>
+<p> A simple example of a view follows;
+  </p>
+<p><pre><font color="#803050">CREATE VIEW ViewOfTableA AS SELECT col1 FROM TableA</font></pre></p>
+<p> A view acts like a regular table and can be queried as you would a table made
+  with the <code><font color="#803050">CREATE TABLE</font></code> statement.  Views are read-only.
+  </p>
+</blockquote>
+<br>
+<a name='6'></a><br><font size='+1' face='Arial' color='#0060A0'>6. DROP VIEW syntax</font>
+<blockquote>
+<p><pre><b>DROP VIEW table_name</b></pre></p>
+<p> Removes a view from the database.  A view can be changed by dropping and
+  recreating it.</p>
+</blockquote>
+<br>
+<a name='7'></a><br><font size='+1' face='Arial' color='#0060A0'>7. CREATE SEQUENCE syntax</font>
+<blockquote>
+<p><pre><b>CREATE SEQUENCE name
+  [ INCREMENT increment_value ]
+  [ MINVALUE minimum_value ]
+  [ MAXVALUE maximum_value ]
+  [ START start_value ]
+  [ CACHE cache_value ]
+  [ CYCLE ]</b></pre></p>
+<p> Creates a new sequence generator that can be used to generate an iterative
+    sequence of values.  Sequence generators have a number of uses including the
+    creation of primary keys for a table.  The INCREMENT, MINVALUE, MAXVALUE,
+    START, and CACHE values are all optional.
+  </p>
+<p> The INCREMENT value specifies how the sequence increments each iteration.  By
+    default a sequence generator increments by 1.  The MINVALUE and MAXVALUE values
+    specify the bounds of the sequence generator.  By default MINVALUE and MAXVALUE
+    are 0 and Long.MAX_VALUE respectively.  The START value specifies the first key
+    (exclusive) of the generator.  The CACHE value specifies how many keys should
+    be cached ahead of time.
+  </p>
+<p> Below is an example that creates a new sequence generator called 'seq_key_1' that
+    starts at 10 and increments by 2 each iteration;
+  </p>
+<p> <pre><font color="#803050">CREATE SEQUENCE seq_key_1 INCREMENT 2 START 10</font></pre></p>
+<p> A sequence generator is accessed by a call to the <code><font color="#803050">NEXTVAL</font></code> function.  The
+    <code><font color="#803050">NEXTVAL</font></code> function iterates the generator and returns the next value from
+    the sequence.  The <code><font color="#803050">NEXTVAL</font></code> function is an atomic operation and
+    guarantees that no two identical values will be returned regardless of the frequency or
+    concurrency of calls to the function.  Below is a simple example;
+  </p>
+<p><pre><font color="#803050">SELECT NEXTVAL('seq_key_1')</font></pre></p>
+</blockquote>
+<br>
+<a name='8'></a><br><font size='+1' face='Arial' color='#0060A0'>8. DROP SEQUENCE syntax</font>
+<blockquote>
+<p><pre><b>DROP SEQUENCE name</b></pre></p>
+<p> Drops a sequence generator previously created with the <code><font color="#803050">CREATE SEQUENCE</font></code>
+    statement.  A sequence generator may be changed by dropping the sequence and then
+    recreating it.
+  </p>
+</blockquote>
+<br>
+<a name='9'></a><br><font size='+1' face='Arial' color='#0060A0'>9. COMPACT TABLE syntax</font>
+<blockquote>
+<p><pre><b>COMPACT TABLE table_name</b></pre></p>
+<p> Compacts the table data file in the file system.  This removes all unused
+  space from the table file and may rearrange the structure of the table
+  to a form that better fits the characteristics of the data being stored.
+  </p>
+</blockquote>
+<br>
+<a name='10'></a><br><font size='+1' face='Arial' color='#0060A0'>10. CREATE SCHEMA syntax</font>
+<blockquote>
+<p><pre><b>CREATE SCHEMA schema_name</b></pre></p>
+<p> Creates a schema with the given name.  By default a database has three
+  schema initially defined, <code>SYS_INFO</code>, <code>SYS_JDBC</code> and
+  <code>APP</code>.  The <code>SYS_INFO</code> and <code>SYS_JDBC</code>
+  schema contain a number of important system tables and the <code>APP</code> schema
+  is the default user schema.
+  </p>
+<p> The following is an example of creating a new schema and changing to it;
+  </p>
+<p><pre><font color="#803050">CREATE SCHEMA my_schema;
+SET SCHEMA my_schema;</font></pre></p>
+</blockquote>
+<br>
+<a name='11'></a><br><font size='+1' face='Arial' color='#0060A0'>11. DROP SCHEMA syntax</font>
+<blockquote>
+<p><pre><b>DROP SCHEMA schema_name</b></pre></p>
+<p> Drops the schema with the given name.  A schema may only be dropped if it
+  contains no tables.  The <code>SYS_INFO</code> and <code>APP</code> schema may
+  not be dropped.
+  </p>
+</blockquote>
+<br>
+<a name='12'></a><br><font size='+1' face='Arial' color='#0060A0'>12. INSERT syntax</font>
+<blockquote>
+<p><pre><b>INSERT INTO table_name [ ( col_name1, col_name2, .... ) ]
+  VALUES ( expression1_1, expression1_2, .... ),
+         ( expression2_1, expression2_2, .... ), .... </b></pre></p>
+<p><pre><b>INSERT INTO table_name [ ( col_name1, col_name2, .... ) ]
+  SELECT ... </b></pre></p>
+<p><pre><b>INSERT INTO table_name
+  SET col_name1 = expression1, col_name2 = expression2, .... </b></pre></p>
+<p> This is the SQL command to insert records into a table in the
+  database.  This statement comes in three forms.  The first inserts data from a
+  <code><font color="#803050">VALUES</font></code> clause;
+  </p>
+<p><pre><font color="#803050">INSERT INTO table ( col1, col2, col3 )
+  VALUES ( 10, 4 + 3, CONCAT('1', '1', 'c') ),
+         ( 11, (28 / 2) - 7, CONCAT(col1, 'c') )</font></pre></p>
+<p> The second form is used to copy information from a <code><font color="#803050">SELECT</font></code>
+  query into the table specified in the <code><font color="#803050">INSERT</font></code> statement.  For example;
+  </p>
+<p><pre><font color="#803050">INSERT INTO table ( col1, col2, col3 )
+  SELECT id, num, description
+    FROM table2
+   WHERE description LIKE '11%'</font></pre></p>
+<p> The third form uses a list of column <code><font color="#803050">SET</font></code> assignments.  For example;
+  </p>
+<p><pre><font color="#803050">INSERT INTO table
+  SET col1 = 10, col2 = 4 + 3, col3 = CONCAT(col1, 'c')</font></pre></p>
+<p> If a column of the table is not specified in an <code><font color="#803050">INSERT</font></code> the
+  default value declared for the column is used.  If no default value was
+  declared a NULL value is inserted in the column.  If the column is declared
+  as <code><font color="#803050">NOT NULL</font></code> the insert operation fails.
+  </p>
+</blockquote>
+<br>
+<a name='13'></a><br><font size='+1' face='Arial' color='#0060A0'>13. DELETE syntax</font>
+<blockquote>
+<p><pre><b>DELETE FROM table_name
+  [ WHERE expression ]
+  [ LIMIT limit_amount ]</b></pre></p>
+<p> Deletes all the rows from the table that match the <code><font color="#803050">WHERE</font></code> clause.
+  An optional <code><font color="#803050">LIMIT</font></code> clause specifies the maximum number of matched
+  rows to be removed.  An example of using the <code><font color="#803050">DELETE</font></code> statement;
+  </p>
+<p><pre><font color="#803050">DELETE FROM table
+  WHERE col3 LIKE '11%' AND col1 < 1000 LIMIT 200</font></pre></p>
+</blockquote>
+<br>
+<a name='14'></a><br><font size='+1' face='Arial' color='#0060A0'>14. UPDATE syntax</font>
+<blockquote>
+<p><pre><b>UPDATE table_name
+  SET col_name1 = expression1, col_name2 = expression2, ....
+  [ WHERE expression ]
+  [ LIMIT limit_amount ]</b></pre></p>
+<p> Updates information in a table.  The <code><font color="#803050">SET</font></code> clause
+  is a list of assignments that describe how the columns of the data
+  matched by the <code><font color="#803050">WHERE</font></code> clause are to be updated.  Any
+  columns not assigned in the <code><font color="#803050">SET</font></code> clause are left unchanged.
+  Examples of using <code><font color="#803050">UPDATE</font></code>;
+  </p>
+<p><pre><font color="#803050">UPDATE Employee
+  SET salary = salary * 1.25
+  WHERE name = 'Bob'</font></pre></p>
+<p><pre><font color="#803050">UPDATE Order
+  SET id = id + 3, part = CONCAT(part, '-00')
+  WHERE part LIKE 'PO-%'
+  LIMIT 10</font></pre></p>
+</blockquote>
+<br>
+<a name='15'></a><br><font size='+1' face='Arial' color='#0060A0'>15. SELECT syntax</font>
+<blockquote>
+<p><pre><b>SELECT [ DISTINCT | ALL ]
+  column_expression1, column_expression2, ....
+  [ FROM from_clause ]
+  [ WHERE where_expression ]
+  [ GROUP BY expression1, expression2, .... ]
+  [ HAVING having_expression ]
+  [ ORDER BY order_column_expr1, order_column_expr2, .... ]</b></pre></p>
+<p><pre><b>column_expression ::= expression [ AS ] [ column_alias ]</b></pre></p>
+<p><pre><b>from_clause ::= select_table1, select_table2, ...
+from_clause ::= select_table1 LEFT [OUTER] JOIN select_table2 ON expr  ...
+from_clause ::= select_table1 RIGHT [OUTER] JOIN select_table2 ON expr  ...
+from_clause ::= select_table1 [INNER] JOIN select_table2  ...</b></pre></p>
+<p><pre><b>select_table ::= table_name [ AS ] [ table_alias ]
+select_table ::= ( sub_select_statement ) [ AS ] [ table_alias ]</b></pre></p>
+<p><pre><b>order_column_expr ::= expression [ ASC | DESC ]</b></pre></p>
+<p> The <code><font color="#803050">SELECT</font></code> statement is used to form queries for extracting
+  information out of the database.  The following example query will return the
+  number, quantity and price of all orders for more than 5 items sorted in
+  descending order by order number.  In addition it rounds the order price to
+  two decimal places and applies a dollar ($) sign to the output.
+  </p>
+<p><pre><font color="#803050">  SELECT number, quantity, CONCAT('$', ROUND(price, 2))
+    FROM Order
+   WHERE quantity > 5
+ORDER BY number DESC </font></pre></p>
+<p>The <code><font color="#803050">ORDER BY</font></code> and <code><font color="#803050">GROUP BY</font></code> clause may refer to a
+  column, a column alias, or an expression.  The <code><font color="#803050">HAVING</font></code> clause is
+  evaluated after the grouping and aggregate columns have been resolved.
+  </p>
+<p> For examples of using <code><font color="#803050">SELECT</font></code> with aggregate functions see
+  the 'Internal SQL Functions' section.
+  </p>
+</blockquote>
+<br>
+<a name='16'></a><br><font size='+1' face='Arial' color='#0060A0'>16. COMMIT and ROLLBACK syntax</font>
+<blockquote>
+<p><pre><b>COMMIT
+ROLLBACK</b></pre></p>
+<p> Transactional operations for closing a transaction and either committing all
+  the changes made or rolling back and disposing all changes.  <code><font color="#803050">COMMIT</font></code> may
+  cause a concurrent transaction conflict exception to be thrown.  If a conflict is
+  detected the transaction is automatically rolled back.  See the 'Transactions' section
+  of the documentation for further details of how Mckoi handles transactions.
+  </p>
+</blockquote>
+<br>
+<a name='17'></a><br><font size='+1' face='Arial' color='#0060A0'>17. CREATE USER, ALTER USER and DROP USER syntax</font>
+<blockquote>
+<p><pre><b>CREATE USER username SET PASSWORD 'password'
+[ SET GROUPS groups_list ]
+[ SET ACCOUNT ( LOCK | UNLOCK ) ]
+
+ALTER USER username SET PASSWORD 'password'
+[ SET GROUPS groups_list ]
+[ SET ACCOUNT ( LOCK | UNLOCK ) ]
+
+DROP USER username</b></pre></p>
+<p> These are user management commands for creating/altering and dropping users in the
+  system.  Only members of the 'secure access' group are permitted to perform these
+  operations, which includes the administrator user that is setup when the Mckoi database
+  is created.
+  </p>
+<p> The following example creates a user called 'harry' with the password 'cat';
+  </p>
+<p><pre><font color="#803050">  CREATE USER harry SET PASSWORD 'cat' </font></pre></p>
+<p> See the 'JDBC Driver' section for documentation on connecting to a database using
+  a username and password to connect to a database.
+  </p>
+</blockquote>
+<br>
+<a name='18'></a><br><font size='+1' face='Arial' color='#0060A0'>18. GRANT/REVOKE syntax</font>
+<blockquote>
+<p><pre><b>GRANT privileges ON database_object TO ( PUBLIC | user_list )
+[ WITH GRANT OPTION ]
+
+REVOKE [ GRANT OPTION FOR ] privileges ON database_object
+FROM ( PUBLIC | user_list )
+
+privileges ::= priv_item1, priv_item2, ...
+
+priv_item ::= ALL [ PRIVILEGES ] | SELECT | INSERT | UPDATE |
+              DELETE | REFERENCES | USAGE
+
+database_object ::= [ TABLE ] table_name | SCHEMA schema_name
+
+user_list ::= PUBLIC | username1, username2, ...</b></pre></p>
+<p> Grants or revokes types of access on a table or view to a user.  When a
+  table or view is created the system gives full grant options to the user that
+  created the object.  The user is given the option to grant other users
+  selective access to the object through the <code><font color="#803050">GRANT</font></code> and <code><font color="#803050">REVOKE</font></code>
+  syntax.  For example, the follow statement shows how a user would grant user
+  'toby' permission to <code><font color="#803050">SELECT</font></code> from a table called <code>MyTable</code>;
+  </p>
+<p><pre><font color="#803050">  GRANT SELECT ON TABLE MyTable TO toby</font></pre></p>
+<p> The <code><font color="#803050">GRANT</font></code> command allows granting all users access to an
+  object.  The following statement makes <code>MyTable</code> globally readable;
+  </p>
+<p><pre><font color="#803050">  GRANT SELECT ON TABLE MyTable TO PUBLIC</font></pre></p>
+<p> If you wish to give a user the option of granting a privilege to another
+  user, add <code><font color="#803050">WITH GRANT OPTION</font></code> to the <code><font color="#803050">GRANT</font></code> statement.
+  </p>
+</blockquote>
+<br>
+<a name='19'></a><br><font size='+1' face='Arial' color='#0060A0'>19. SET syntax</font>
+<blockquote>
+<p><pre><b>SET variable = expression
+SET AUTO COMMIT ( ON | OFF )
+SET TRANSACTION ISOLATION LEVEL ( SERIALIZABLE )
+SET SCHEMA schema_name
+</b></pre></p>
+<p> Makes a change to the state of the connection.  <code><font color="#803050">SET AUTO COMMIT</font></code> is used
+  to switch transaction 'auto commit mode' on or off.  When auto commit mode is on
+  the engine commits after every statement.  By default, a connection starts with
+  auto commit mode switched on.  <code><font color="#803050">SET TRANSACTION ISOLATION LEVEL</font></code> currently
+  only supports the <code><font color="#803050">SERIALIZABLE</font></code> isolation level.  See the 'Transactions'
+  section of the documentation for details of how Mckoi handles transactions.
+  </p>
+<p> <code><font color="#803050">SET SCHEMA</font></code> is used to change the default schema of a connection.
+  </p>
+</blockquote>
+<br>
+<a name='20'></a><br><font size='+1' face='Arial' color='#0060A0'>20. DESCRIBE syntax</font>
+<blockquote>
+<p><pre><b>DESCRIBE table_name</b></pre></p>
+<p> This command provides information about the columns of the table.  It
+  shows the column names, the type / size and scale (if applicable) and other
+  useful information.  </p>
+</blockquote>
+<br>
+<a name='21'></a><br><font size='+1' face='Arial' color='#0060A0'>21. SHOW syntax</font>
+<blockquote>
+<p><pre><b>SHOW engine_variable</b></pre></p>
+<p><pre><b>engine_variable ::= TABLES | SCHEMA | STATUS | CONNECTIONS</b></pre></p>
+<p> Shows internal information about the database system.  <code><font color="#803050">SHOW TABLES</font></code>
+  returns a list of tables in the database.  <code><font color="#803050">SHOW STATUS</font></code> returns
+  debugging and statistical information about the internal state of the database
+  engine.  <code><font color="#803050">SHOW CONNECTIONS</font></code> returns a snapshot of the current connections
+  on the database.  <code><font color="#803050">SHOW SCHEMA</font></code> lists all the schema defined.
+  </p>
+</blockquote>
+<br>
+<a name='22'></a><br><font size='+1' face='Arial' color='#0060A0'>22. SHUTDOWN syntax</font>
+<blockquote>
+<p><pre><b>SHUTDOWN</b></pre></p>
+<p> Shuts down the database.  If the database is running as a server the database
+  shuts down cleanly and the process is stopped.  If the database is embedded in a Java
+  application it is cleanly put into a shut down state.
+  </p>
+<p> Only a user with the correct grants may successfully execute this command.
+  </p>
+</blockquote>
+<br>
+<table width="100%" cellspacing="5"><tr><td><hr size="1">
+<div align="left"><font size=-1>Last Updated: Mon Aug 16 00:27:18 PDT 2004<br></font></div>
+<div align="left"><font size=-1>Mckoi SQL Database Copyright &copy; 2000 - 2004 Diehl and Associates, Inc.  All rights reserved.<br></font></div>
+<br>
+</td></tr></table></BODY></HTML>

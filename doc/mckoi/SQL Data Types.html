@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML><HEAD><TITLE>SQL Data Types</TITLE>
+<link REL="shortcut icon" HREF="/favicon.ico" TYPE="image/x-icon">
+</HEAD>
+<body marginwidth="6" marginheight="0" leftmargin="6" rightmargin="6" topmargin="0" text="#000000" bgcolor="#FFFFFF" link="#0060A0" vlink="#001060" alink="#B00040">
+<!-- Title Header -->
+
+<table CELLSPACING="5" CELLPADDING="0" WIDTH="100%" >
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td><a href="index.html"><img SRC="mchead3_tc.gif" height="54" width="480" border="0" alt="Mckoi SQL Database"></a></td>
+</tr>
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td>
+<font face="Arial" size="-1"><a href="index.html">Home</a> / <a href="docindex.html">Documentation</a> / <a href="FAQ.html">FAQ</a> / <a href="index.html#Support">Support</a> / <a href="index.html#Download">Download</a></font><br><b><font size="+1" color="#0060A0"> SQL Data Types</font></b></td>
+</tr>
+</table>
+
+<!-- End Title Header -->
+<h3>SQL Data Types Index</h3>
+<blockquote><ol>
+<li><a href='#1'>SQL Data Types Introduction</a><br>
+<li><a href='#2'>SQL Data Types Supported</a><br>
+</ol></blockquote>
+<hr size='1'>
+<a name='1'></a><br><font size='+1' face='Arial' color='#0060A0'>1. SQL Data Types Introduction</font>
+<blockquote>
+<p> Mckoi SQL was designed to support a wide range of data types without the
+    size/scale limitations often seen in other SQL products.  SQL data types
+    in Mckoi are internally backed by a few very flexible primitive types.  This
+    enables for the support of all the standard SQL types with a high degree of
+    scalability while keeping the core engine design simple.
+  </p>
+<p> This section provides information on the data types supported by Mckoi SQL Database.
+  </p>
+</blockquote>
+<br>
+<a name='2'></a><br><font size='+1' face='Arial' color='#0060A0'>2. SQL Data Types Supported</font>
+<blockquote>
+<p> The following is a list of SQL types that Mckoi SQL supports;
+  </p>
+<p> <code><b>BOOLEAN</b></code> - A boolean value either true, false or null.
+  </p>
+<p> <code><b>CHAR(size)</b></code> or <code><b>CHARACTER(size)</b></code> - A string of fixed length.  The maximum
+    size of a <code><font color="#803050">CHAR</font></code> string is 1 billion characters.
+  </p>
+<p> <code><b>VARCHAR(size)</b></code>, <code><b>LONGVARCHAR(size)</b></code>,
+       <code><b>CHARACTER VARYING(size)</b></code>, <code><b>LONG CHARACTER VARYING(size)</b></code>,
+       <code><b>TEXT(size)</b></code> or <code><b>STRING(size)</b></code> - A string of variable length.  The size
+    constraint of these string types do not have to be given and defaults to the maximum possible
+    size of strings that the database is able to store.  The maximum size of these string types is
+    1 billion characters.
+  </p>
+<p> <code><b>CLOB</b></code> - A string of variable length without a size constraint.  The maximum size
+    of a <code><font color="#803050">CLOB</font></code> object is 1 billion characters.
+  </p>
+<p> <code><b>TINYINT</b></code> - An 8-bit signed integer value.  The range of <code><font color="#803050">TINYINT</font></code> is
+    -128 to 127.
+  </p>
+<p> <code><b>SMALLINT</b></code> - A 16-bit signed integer value.  The range of <code><font color="#803050">SMALLINT</font></code> is
+    -32768 to 32767.
+  </p>
+<p> <code><b>INTEGER</b></code> or <code><b>INT</b></code> - A 32-bit signed integer value.  The range of
+    <code><font color="#803050">INTEGER</font></code> is -2147483648 to 2147483647.
+  </p>
+<p> <code><b>BIGINT</b></code> - A 64-bit signed integer value.  The range of <code><font color="#803050">BIGINT</font></code> is
+    -9223372036854775808 to 9223372036854775807.
+  </p>
+<p> <code><b>FLOAT</b></code> or <code><b>DOUBLE</b></code> - A 64-bit precision floating point value.  These
+    types are analogous to the Java <code>double</code> type.
+  </p>
+<p> <code><b>REAL</b></code>, <code><b>NUMERIC</b></code> or <code><b>DECIMAL</b></code> - A higher precision numeric value.
+    These numeric types are represented by <code>java.math.BigDecimal</code> and therefore can
+    represent numeric values of any precision and scale.
+  </p>
+<p> <code><b>DATE</b></code> - A day/month/year value.  The <code><font color="#803050">DATE</font></code> type does not have any near
+    time bounding issues and is able to represent dates many millennia in the future and the past.
+    The <code><font color="#803050">TIMESTAMP</font></code> type is internally represented by <code>java.util.Date</code>.
+  </p>
+<p> <code><b>TIME</b></code> - A time of day value.
+  </p>
+<p> <code><b>TIMESTAMP</b></code> - A day/month/year and time of day value.  The <code><font color="#803050">TIMESTAMP</font></code> type
+    does not have any near time bounding issues and is able to represent dates many millennia in the
+    future and the past.  The <code><font color="#803050">TIMESTAMP</font></code> type is internally represented by
+    <code>java.util.Date</code>.
+  </p>
+<p> <code><b>BINARY(size)</b></code>, <code><b>VARBINARY(size)</b></code> or <code><b>LONGVARBINARY(size)</b></code>
+    - A variable sized binary object. The size constraint is optional and defaults to the maximum
+    size.  The maximum size of a binary object is 2 billion bytes.
+  </p>
+<p> <code><b>BLOB</b></code> - A variable sized binary object with no size constraint.  The
+    maximum size of a binary object is 2 billion bytes.
+  </p>
+<p> <code><b>JAVA_OBJECT</b></code> - A Java object.  A Java object must implement the
+    <code>java.io.Serializable</code> interface and abide by the rules of serializable
+    objects in Java.
+  </p>
+</blockquote>
+<br>
+<table width="100%" cellspacing="5"><tr><td><hr size="1">
+<div align="left"><font size=-1>Last Updated: Mon Aug 16 00:27:18 PDT 2004<br></font></div>
+<div align="left"><font size=-1>Mckoi SQL Database Copyright &copy; 2000 - 2004 Diehl and Associates, Inc.  All rights reserved.<br></font></div>
+<br>
+</td></tr></table></BODY></HTML>

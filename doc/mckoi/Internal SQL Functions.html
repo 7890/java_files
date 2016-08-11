@@ -1,0 +1,607 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML><HEAD><TITLE>Internal SQL Functions</TITLE>
+<link REL="shortcut icon" HREF="/favicon.ico" TYPE="image/x-icon">
+</HEAD>
+<body marginwidth="6" marginheight="0" leftmargin="6" rightmargin="6" topmargin="0" text="#000000" bgcolor="#FFFFFF" link="#0060A0" vlink="#001060" alink="#B00040">
+<!-- Title Header -->
+
+<table CELLSPACING="5" CELLPADDING="0" WIDTH="100%" >
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td><a href="index.html"><img SRC="mchead3_tc.gif" height="54" width="480" border="0" alt="Mckoi SQL Database"></a></td>
+</tr>
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td>
+<font face="Arial" size="-1"><a href="index.html">Home</a> / <a href="docindex.html">Documentation</a> / <a href="FAQ.html">FAQ</a> / <a href="index.html#Support">Support</a> / <a href="index.html#Download">Download</a></font><br><b><font size="+1" color="#0060A0"> Internal SQL Functions</font></b></td>
+</tr>
+</table>
+
+<!-- End Title Header -->
+<h3>Internal SQL Functions Index</h3>
+<blockquote><ol>
+<li><a href='#1'>Functions Introduction</a><br>
+<li><a href='#2'>Mathematical Functions</a><br>
+<li><a href='#3'>String Functions</a><br>
+<li><a href='#4'>Aggregate Functions</a><br>
+<li><a href='#5'>Security Functions</a><br>
+<li><a href='#6'>Branch Functions</a><br>
+<li><a href='#7'>Date/Time Functions</a><br>
+<li><a href='#8'>Misc Functions</a><br>
+</ol></blockquote>
+<hr size='1'>
+<a name='1'></a><br><font size='+1' face='Arial' color='#0060A0'>1. Functions Introduction</font>
+<blockquote>
+<p> This section gives examples of all functions that are available in the
+  Mckoi database software.  Functions may be used within all expressions
+  except aggregate functions that may only be used within the
+  <code><font color="#803050">SELECT .... FROM</font></code> clause.   
+  </p>
+</blockquote>
+<br>
+<a name='2'></a><br><font size='+1' face='Arial' color='#0060A0'>2. Mathematical Functions</font>
+<blockquote>
+<p> Follows are all the mathematical functions available in Mckoi Database.  Note that
+       some of these functions may lose precision because the number could be cast to a
+       'double'.  You can assume that all mathematical functions have at worst the
+       precision of a 'double'. </p>
+<a name="ABS"></a>
+<b>ABS(number)</b><br>
+<blockquote>
+<p> Returns the absolute value of a number. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT ABS(-0.94)
+</font>==>  0.94
+</pre>
+<pre>
+<font color='#803050'>     SELECT ABS(9 - 200)
+</font>==>  191
+</pre>
+</blockquote>
+</blockquote>
+<a name="SIGN"></a>
+<b>SIGN(number)</b><br>
+<blockquote>
+<p> Returns 1 if the number is positive, -1 if the number is negative and 0 if the number is zero. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT SIGN(40)
+</font>==>  1
+</pre>
+<pre>
+<font color='#803050'>     SELECT SIGN(-40)
+</font>==>  -1
+</pre>
+<pre>
+<font color='#803050'>     SELECT SIGN(40 - 40)
+</font>==>  0
+</pre>
+</blockquote>
+</blockquote>
+<a name="MOD"></a>
+<b>MOD(number1, number2)</b><br>
+<blockquote>
+<p> Returns the modulo of number1 and number2 (equivalent to {number1 % number2} in Java). </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT MOD(15, 5)
+</font>==>  0
+</pre>
+<pre>
+<font color='#803050'>     SELECT MOD(33, 10)
+</font>==>  3
+</pre>
+<pre>
+<font color='#803050'>     SELECT ROUND(552 / 10), MOD(552, 10)
+</font>==>  55, 2
+</pre>
+</blockquote>
+</blockquote>
+<a name="ROUND"></a>
+<b>ROUND(number, decimal_places)</b><br>
+<b>ROUND(number)</b><br>
+<blockquote>
+<p> Rounds the number to 'n' decimal places.
+         When no 'decimal_places' argument is provided the number is rounded to the nearest whole
+         number.</p>
+<p> This will round up if the fraction to the right is >= .5 otherwise it rounds down.
+         This uses the {BigDecimal.setScale(decimal_places, BigDecimal.ROUND_HALF_UP)} method for
+         rounding.</p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT ROUND((943 * 13) / 99, 3)
+</font>==>  123.828
+</pre>
+<pre>
+<font color='#803050'>     SELECT ROUND((943 * 13) / 99, 2)
+</font>==>  123.83
+</pre>
+<pre>
+<font color='#803050'>     SELECT ROUND((943 * 13) / 99)
+</font>==>  124
+</pre>
+</blockquote>
+</blockquote>
+<a name="POW"></a>
+<b>POW(number1, number2)</b><br>
+<blockquote>
+<p> Raises number1 to the power of number2. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT POW(9, 6)
+</font>==>  531441
+</pre>
+<pre>
+<font color='#803050'>     SELECT POW(2, 32)
+</font>==>  4294967296
+</pre>
+<pre>
+<font color='#803050'>     SELECT POW(2, 64)
+</font>==>  18446744073709551616
+</pre>
+<pre>
+<font color='#803050'>     SELECT POW(2, -3)
+</font>==>  0.125
+</pre>
+</blockquote>
+</blockquote>
+<a name="SQRT"></a>
+<b>SQRT(number)</b><br>
+<blockquote>
+<p> Finds the square root of the number argument. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT SQRT(65536)
+</font>==>  256
+</pre>
+<pre>
+<font color='#803050'>     SELECT SQRT(-1)
+</font>==>  NULL
+</pre>
+</blockquote>
+</blockquote>
+<a name="LEAST"></a>
+<b>LEAST(val1, val2, ...)</b><br>
+<blockquote>
+<p> This function accepts any number of arguments and returns the value
+         that represents the least value of the set. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT LEAST(4)
+</font>==>  4
+</pre>
+<pre>
+<font color='#803050'>     SELECT LEAST(90, 9.125, 3, 75)
+</font>==>  3
+</pre>
+<pre>
+<font color='#803050'>     SELECT LEAST('H', 'Z', 'B')
+</font>==>  B
+</pre>
+<pre>
+<font color='#803050'>     SELECT LEAST(10 / 3, 10 * 3,
+</font><font color='#803050'>                  POW(10, 3), MOD(10, 3))
+</font>==>  1
+</pre>
+</blockquote>
+</blockquote>
+<a name="GREATEST"></a>
+<b>GREATEST(val1, val2, ...)</b><br>
+<blockquote>
+<p> This function accepts any number of arguments and returns the value
+         that represents the greatest value of the set. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT GREATEST(4)
+</font>==>  4
+</pre>
+<pre>
+<font color='#803050'>     SELECT GREATEST(90, 9.125, 3, 75)
+</font>==>  90
+</pre>
+<pre>
+<font color='#803050'>     SELECT GREATEST('H', 'Z', 'B')
+</font>==>  Z
+</pre>
+<pre>
+<font color='#803050'>     SELECT GREATEST(10 / 3, 10 * 3,
+</font><font color='#803050'>                     POW(10, 3), MOD(10, 3))
+</font>==>  1000
+</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+<br>
+<a name='3'></a><br><font size='+1' face='Arial' color='#0060A0'>3. String Functions</font>
+<blockquote>
+<p> String functions in Mckoi Database mostly map to equivalent functions found within
+       java.lang.String. </p>
+<a name="LOWER"></a>
+<b>LOWER(str)</b><br>
+<blockquote>
+<p> Returns a lower case version of the string literal argument. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT LOWER('THis is sOME TEXT')
+</font>==>  this is some text
+</pre>
+</blockquote>
+</blockquote>
+<a name="UPPER"></a>
+<b>UPPER(str)</b><br>
+<blockquote>
+<p> Returns an upper case version of the string literal argument. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT UPPER('THis is sOME TEXT')
+</font>==>  THIS IS SOME TEXT
+</pre>
+</blockquote>
+</blockquote>
+<a name="CONCAT"></a>
+<b>CONCAT(str1, str2, ...)</b><br>
+<blockquote>
+<p> Returns the concatenation of the string arguments. This function
+         can take any number of arguments. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT CONCAT('This i', 's some text', '.')
+</font>==>  This is some text.
+</pre>
+<pre>
+<font color='#803050'>     SELECT CONCAT('-', 0.95)
+</font>==>  -0.95
+</pre>
+</blockquote>
+</blockquote>
+<a name="LENGTH"></a>
+<b>LENGTH(str)</b><br>
+<blockquote>
+<p> Returns the number of characters in the string argument.</p>
+<p> <i>NOTE: This may
+         additionally be used on BLOB data to return the count of bytes in the BLOB.</i></p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT LENGTH('This is some text')
+</font>==>  17
+</pre>
+<pre>
+<font color='#803050'>     SELECT LENGTH(0.544)
+</font>==>  5
+</pre>
+<pre>
+<font color='#803050'>     SELECT LENGTH('    Test')
+</font>==>  8
+</pre>
+</blockquote>
+</blockquote>
+<a name="TRIM"></a>
+<b>TRIM( [ [ LEADING | TRAILING | BOTH ] [ characters ] FROM ] str )</b><br>
+<b>LTRIM(str)</b><br>
+<b>RTRIM(str)</b><br>
+<blockquote>
+<p> Trims characters from a string argument.  The <code>LTRIM</code> and
+         <code>RTRIM</code> form trim whitespace from the left and right of the
+         string respectively.</p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT TRIM(TRAILING 'a' FROM 'aaabcdaaa')
+</font>==>  aaabcd
+</pre>
+<pre>
+<font color='#803050'>     SELECT TRIM(LEADING 'a' FROM 'aaabcdaaa')
+</font>==>  bcdaaa
+</pre>
+<pre>
+<font color='#803050'>     SELECT TRIM('ab' FROM 'ababzzzzab')
+</font>==>  zzzz
+</pre>
+<pre>
+<font color='#803050'>     SELECT TRIM('  a string message ')
+</font>==>  a string message
+</pre>
+</blockquote>
+</blockquote>
+<a name="SUBSTRING"></a>
+<b>SUBSTRING(str, start_index)</b><br>
+<b>SUBSTRING(str, start_index, length)</b><br>
+<blockquote>
+<p> Returns a substring of a string.  The <code>SUBSTRING</code> function complies
+      with the SQL specification.  The <code>start_index</code> parameter is a value
+      between 1 and the length of the string where 1 includes the first character, 2
+      includes the second character, etc.  The <code>length</code> parameter represents
+      the size of the substring.</p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT SUBSTRING('Tobias Downer', 8)
+</font>==>  Downer
+</pre>
+<pre>
+<font color='#803050'>     SELECT SUBSTRING('abcd', 1, 2)
+</font>==>  ab
+</pre>
+<pre>
+<font color='#803050'>     SELECT SUBSTRING('abcd', 3, 4)
+</font>==>  cd
+</pre>
+<pre>
+<font color='#803050'>     SELECT SUBSTRING('abcd', 3, 5000)
+</font>==>  cd
+</pre>
+<pre>
+<font color='#803050'>     SELECT SUBSTRING('abcd', 0, 5000)
+</font>==>  abcd
+</pre>
+<pre>
+<font color='#803050'>     SELECT SUBSTRING('abcd', 1, 0)
+</font>==>  (string of 0 length)
+</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+<br>
+<a name='4'></a><br><font size='+1' face='Arial' color='#0060A0'>4. Aggregate Functions</font>
+<blockquote>
+<p> Aggregate functions can only operate within a group of a SELECT statement.  They
+       are used to compute statistics over a set of records.
+  </p>
+<a name="COUNT"></a>
+<b>COUNT(*)</b><br>
+<b>COUNT(DISTINCT expression_list)</b><br>
+<b>COUNT(column_name)</b><br>
+<b>COUNT(expression)</b><br>
+<blockquote>
+<p> The * version of this function returns the total number of rows
+         in the group.  If a column name is specified it returns the number
+         of non-null values in the group.  The 'expression' form of this function
+         evaluates the expression for each row in the group and counts it only
+         if it evaluates to NULL.  <code><font color="#803050">COUNT(DISTINCT ... )</font></code> counts all
+         distinct values of the expression list over the group.</p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT COUNT(*)
+</font><font color='#803050'>       FROM Orders
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT COUNT(*)
+</font><font color='#803050'>       FROM Orders
+</font><font color='#803050'>   GROUP BY division
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT COUNT(id)
+</font><font color='#803050'>       FROM Orders
+</font><font color='#803050'>   GROUP BY division
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT last_name, COUNT(DISTINCT last_name)
+</font><font color='#803050'>       FROM Customers
+</font><font color='#803050'>   GROUP BY age
+</font></pre>
+</blockquote>
+</blockquote>
+<a name="SUM"></a>
+<b>SUM(column_name)</b><br>
+<b>SUM(expression)</b><br>
+<blockquote>
+<p> Calculates the sum of all values in a column/expression over a group.
+         The expression form of this function is evaluated for each row in the group. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT SUM(value) FROM Orders
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT SUM(quantity * value)
+</font><font color='#803050'>       FROM Orders
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT SUM(quantity * value) * 0.75
+</font><font color='#803050'>       FROM Orders
+</font><font color='#803050'>   GROUP BY division
+</font></pre>
+</blockquote>
+</blockquote>
+<a name="AVG"></a>
+<b>AVG(column_name)</b><br>
+<b>AVG(expression)</b><br>
+<blockquote>
+<p> Calculates the average of the column/expression over the group.
+         The expression form of this function is evaluated for each row in the group. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT AVG(value) FROM Orders
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT AVG(quantity * value)
+</font><font color='#803050'>       FROM Orders
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT AVG(quantity * value) * 0.75
+</font><font color='#803050'>       FROM Orders
+</font><font color='#803050'>   GROUP BY division
+</font></pre>
+</blockquote>
+</blockquote>
+<a name="MIN"></a>
+<b>MIN(column_name)</b><br>
+<b>MIN(expression)</b><br>
+<blockquote>
+<p> Finds the minimum value of a column/expression over a group. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT MIN(value) FROM Orders
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT MIN(quantity * value)
+</font><font color='#803050'>       FROM Orders
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT MIN(quantity * value) * 0.75
+</font><font color='#803050'>       FROM Orders
+</font><font color='#803050'>   GROUP BY division
+</font></pre>
+</blockquote>
+</blockquote>
+<a name="MAX"></a>
+<b>MAX(column_name)</b><br>
+<b>MAX(expression)</b><br>
+<blockquote>
+<p> Finds the maximum value of a column/expression over a group. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT MAX(value) FROM Orders
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT MAX(quantity * value)
+</font><font color='#803050'>       FROM Orders
+</font></pre>
+<pre>
+<font color='#803050'>     SELECT MAX(quantity * value) * 0.75
+</font><font color='#803050'>       FROM Orders
+</font><font color='#803050'>   GROUP BY division
+</font></pre>
+</blockquote>
+</blockquote>
+</blockquote>
+<br>
+<a name='5'></a><br><font size='+1' face='Arial' color='#0060A0'>5. Security Functions</font>
+<blockquote>
+<p> Functions that provide security information about the session performing
+       the query.
+  </p>
+<a name="USER"></a>
+<b>USER()</b><br>
+<blockquote>
+<p> Returns the current user. </p>
+</blockquote>
+<a name="PRIVGROUPS"></a>
+<b>PRIVGROUPS()</b><br>
+<blockquote>
+<p> Returns a comma deliminated list of priv groups the user belongs to.
+         A user may belong to any number of groups which dictate the tables a
+         user may access. </p>
+</blockquote>
+</blockquote>
+<br>
+<a name='6'></a><br><font size='+1' face='Arial' color='#0060A0'>6. Branch Functions</font>
+<blockquote>
+<a name="IF"></a>
+<b>IF(condition_expr, true_expr, false_expr)</b><br>
+<blockquote>
+<p> If the first expression (condition_expr) evaluates to true this function
+         returns the result of 'true_expr' otherwise returns the result of
+         'false_exp'. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT IF(true, 5, 8)
+</font>==>  5
+</pre>
+<pre>
+<font color='#803050'>     SELECT IF(false, 5, 8)
+</font>==>  8
+</pre>
+<pre>
+<font color='#803050'>     SELECT IF(NULL, 5, 8)
+</font>==>  NULL
+</pre>
+<pre>
+<font color='#803050'>     SELECT IF(true, IF(false, 1, 2), 3)
+</font>==>  2
+</pre>
+<pre>
+<font color='#803050'>     SELECT IF(col1 = 0, 'N/A', col1) FROM MyTable
+</font></pre>
+</blockquote>
+</blockquote>
+<a name="COALESCE"></a>
+<b>COALESCE(expr1, expr2, expr3, ....)</b><br>
+<blockquote>
+<p> Returns the first non null value from the parameters or null if
+         the entire list contains null values. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT COALESCE(NULL, 'a')
+</font>==>  a
+</pre>
+<pre>
+<font color='#803050'>     SELECT COALESCE(NULL, NULL, NULL)
+</font>==>  NULL
+</pre>
+<pre>
+<font color='#803050'>     SELECT COALESCE(col1, 'N/A') FROM MyTable
+</font></pre>
+</blockquote>
+</blockquote>
+</blockquote>
+<br>
+<a name='7'></a><br><font size='+1' face='Arial' color='#0060A0'>7. Date/Time Functions</font>
+<blockquote>
+<a name="DATEOB"></a>
+<b>DATEOB(date_string)</b><br>
+<blockquote>
+<p> Parses a string to a Date object that can be used on queries against
+         TIMESTAMP / DATE / TIME columns.  DATEOB with no arguments returns the
+         current time of the machine running the database.</p>
+<p> <i>Since version 0.92 this function has been deprecated.  Use the standard
+         DATE, TIME and TIMESTAMP literals specified in SQL-92 instead.</i></p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT DATEOB()
+</font>==>  Wed Aug 09 11:49:31 EDT 2000
+</pre>
+<pre>
+<font color='#803050'>     SELECT DATEOB('Aug 1, 2000')
+</font>==>  Tue Aug 01 00:00:00 EDT 2000
+</pre>
+<pre>
+<font color='#803050'>     SELECT number FROM Orders
+</font><font color='#803050'>      WHERE date_made >= DATEOB('Jan 1, 2000')
+</font></pre>
+</blockquote>
+</blockquote>
+</blockquote>
+<br>
+<a name='8'></a><br><font size='+1' face='Arial' color='#0060A0'>8. Misc Functions</font>
+<blockquote>
+<a name="UNIQUEKEY"></a>
+<b>UNIQUEKEY(table_name)</b><br>
+<blockquote>
+<p> Returns a unique key for the given table name.
+         This is an atomic operation that is guaranteed to return a unique
+         number each call.  It should be used to generate unique identification
+         numbers for records.  It is similar to the AUTO_INCREMENT feature of
+         other database systems. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT UNIQUEKEY('Orders')
+</font></pre>
+<pre>
+<font color='#803050'>     INSERT INTO Orders
+</font><font color='#803050'>        ( id, number, division, date_made, quantity,
+</font><font color='#803050'>          value )
+</font><font color='#803050'>       VALUES
+</font><font color='#803050'>        ( UNIQUEKEY('Orders'), CONCAT('Order-', id),
+</font><font color='#803050'>          'Bio Engineering', DATEOB(), 25, 1900.00 )
+</font></pre>
+</blockquote>
+</blockquote>
+<a name="TONUMBER"></a>
+<b>TONUMBER(expression)</b><br>
+<blockquote>
+<p> Attempts to cast the expression to a number.  If the expression is a
+         boolean then this function will return 1 for true or 0 for false.  If
+         the expression is a String then it attempts to parse the string into a
+         number.  If the expression is a Date then it returns the date as the
+         number of milliseconds since Jan 1st, 1970. </p>
+<blockquote>
+Examples:<p><pre>
+<font color='#803050'>     SELECT TONUMBER(DATEOB('Aug 1, 2000'))
+</font>==>  965102400000
+</pre>
+</blockquote>
+</blockquote>
+</blockquote>
+<br>
+<table width="100%" cellspacing="5"><tr><td><hr size="1">
+<div align="left"><font size=-1>Last Updated: Mon Aug 16 00:27:18 PDT 2004<br></font></div>
+<div align="left"><font size=-1>Mckoi SQL Database Copyright &copy; 2000 - 2004 Diehl and Associates, Inc.  All rights reserved.<br></font></div>
+<br>
+</td></tr></table></BODY></HTML>

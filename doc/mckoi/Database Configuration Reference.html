@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML><HEAD><TITLE>Database Configuration Reference</TITLE>
+<link REL="shortcut icon" HREF="/favicon.ico" TYPE="image/x-icon">
+</HEAD>
+<body marginwidth="6" marginheight="0" leftmargin="6" rightmargin="6" topmargin="0" text="#000000" bgcolor="#FFFFFF" link="#0060A0" vlink="#001060" alink="#B00040">
+<!-- Title Header -->
+
+<table CELLSPACING="5" CELLPADDING="0" WIDTH="100%" >
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td><a href="index.html"><img SRC="mchead3_tc.gif" height="54" width="480" border="0" alt="Mckoi SQL Database"></a></td>
+</tr>
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td>
+<font face="Arial" size="-1"><a href="index.html">Home</a> / <a href="docindex.html">Documentation</a> / <a href="FAQ.html">FAQ</a> / <a href="index.html#Support">Support</a> / <a href="index.html#Download">Download</a></font><br><b><font size="+1" color="#0060A0"> Database Configuration Reference</font></b></td>
+</tr>
+</table>
+
+<!-- End Title Header -->
+<h3>Database Configuration Reference Index</h3>
+<blockquote><ol>
+<li><a href='#1'>Configuration Reference Introduction</a><br>
+<li><a href='#2'>General Features Settings</a><br>
+<li><a href='#3'>File System Settings</a><br>
+<li><a href='#4'>Log Settings</a><br>
+<li><a href='#5'>Network Configuration Settings</a><br>
+<li><a href='#6'>Performance/Cache Settings</a><br>
+</ol></blockquote>
+<hr size='1'>
+<a name='1'></a><br><font size='+1' face='Arial' color='#0060A0'>1. Configuration Reference Introduction</font>
+<blockquote>
+<p> This section is a reference for the configuration properties that
+    are available for use.  These properties can be set in a database
+    configuration file or, if you are using the Control API, through the
+    <code>com.mckoi.database.control.DefaultDBConfig</code> class.
+  </p>
+</blockquote>
+<br>
+<a name='2'></a><br><font size='+1' face='Arial' color='#0060A0'>2. General Features Settings</font>
+<blockquote>
+<p>The following configuration properties are for changing general database
+    features.
+  </p>
+<p><ul>
+    <li><p><b>read_only</b> - This property may be either enabled or disabled and is
+    disabled by default.  When the <b>read_only</b> property is enabled, modifications
+    to the database are not permitted.  This property is useful for enforcing a read only
+    policy or if the database is stored on a read only media such as a CD-ROM.</p>
+  </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>ignore_case_for_identifiers</b> - This property may be either enabled or
+    disabled and is disabled by default.  When the <b>ignore_case_for_identifiers</b>
+    property is enabled, the engine ignores the case of SQL identifiers.  For example,
+    the query <code><font color="#803050">SELECT A_COLUMN FROM A_TABLE</font></code> becomes equivalent to the
+    query <code><font color="#803050">SELECT a_column FROM a_table</font></code>.</p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>transaction_error_on_dirty_select</b> - This property may be either enabled or
+    disabled and is enabled by default.  See the section on Transaction conflicts
+    (<a href="Transactions.html#3">Transactions.html#3</a>) for further details.</p>
+    </li>
+  </ul></p>
+</blockquote>
+<br>
+<a name='3'></a><br><font size='+1' face='Arial' color='#0060A0'>3. File System Settings</font>
+<blockquote>
+<p> The following configuration properties change how Mckoi interacts with
+    the file system and how Mckoi persists the contents of the database.
+  </p>
+<p><ul>
+    <li><p><b>root_path</b> - This property can be set to either <code>jvm</code> or
+    <code>configuration</code> and defaults to <code>jvm</code>.  When this property
+    is set to <code>jvm</code> the location of the database files are found relative
+    to the current JVM root directory.  The JVM root directory is the path where the
+    Java application was started.  When this property is set to <code>configuration</code> the
+    location of the database file are found relative to the path of the configuration
+    file.  This property allows an administrator to set the <b>database_path</b> and
+    <b>log_path</b> to a position in the file system relative to either the JVM or the
+    configuration file.
+    </p>
+    <p>Example:<pre>
+  root_path = configuration
+  database_path = ./data
+  log_path = ./log</pre></p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>database_path</b> - Sets the path in the file system to store the
+    data files.  This property requires the use of the Unix forward slash path
+    deliminator.</p>
+    <p>Example: <code>database_path = /home/databases/mckoi/db1/</code></p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>storage_system</b> - This property may be set to either <code>v1file</code> or
+    <code>v1javaheap</code> and defaults to <code>v1file</code>.  This property specifies
+    the persistence method the Mckoi engine uses for storing and modifying data in the
+    database.  The <code>v1file</code> storage system persists the database to the
+    local file system.  The <code>v1javaheap</code> storage system persists the
+    database on the local Java heap.  Note that if you use the <code>v1javaheap</code> storage
+    system the database will not survive past the lifetime of the JVM and so should
+    only be used for temporary in-memory databases.</p>
+    <p>Example: <code>storage_system = v1javaheap</code></p>
+    </li>
+  </ul></p>
+</blockquote>
+<br>
+<a name='4'></a><br><font size='+1' face='Arial' color='#0060A0'>4. Log Settings</font>
+<blockquote>
+<p> The following configuration properties modify where Mckoi stores log
+    information and the type of information that is logged.
+  </p>
+<p><ul>
+    <li><p><b>log_path</b> - Sets the path in the file system to store the log
+    files.  This property requires the use of the Unix forward slash path
+    deliminator.</p>
+    <p>Example: <code>log_path = C:/mckoi_databases/logs/</code></p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>debug_log_file</b> - Sets the name of the debug log file.  By default
+    the log file is called '<code>debug.log</code>'.</p>
+    <p>Example: <code>debug_log_file = database1_debug.log</code></p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>debug_logs</b> - This property may be either enabled or disabled and
+    by default is enabled.  When disabled no debug information is generated.</p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>debug_level</b> - Sets the level of debug information that is output
+    to the debug log file ranging from 0 to 40.  By default the engine is set to 20
+    which means all alerts, warnings and errors are output to the log file.  Reducing
+    the debug level causes more information to be output to the log.</p>
+    <p>Example: <code>debug_level = 10</code></p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>query_logging</b> - This property may be either enabled or disabled and
+    by default is disabled.  When enabled all SQL queries on the database are logged
+    in the file '<code>commands.log</code>' in the log directory.</p>
+    <p>Example: <code>query_logging = enabled</code></p>
+    </li>
+  </ul></p>
+</blockquote>
+<br>
+<a name='5'></a><br><font size='+1' face='Arial' color='#0060A0'>5. Network Configuration Settings</font>
+<blockquote>
+<p> The network configuration properties are only applicable when Mckoi SQL
+    is being used as a network server.
+  </p>
+<p><ul>
+    <li><p><b>jdbc_server_address</b> - The local IP address to bind the Mckoi
+    server to.  If this property is not present the engine defaults to all local
+    interfaces.  This property is useful when a Mckoi database is running on
+    a server with multiple interfaces and access to the database should only be
+    allowed through one interface.</p>
+    <p>Example: <code>jdbc_server_address=127.0.0.1</code></p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>jdbc_server_port</b> - The TCP port address to bind the Mckoi server
+    to.  If this property is not present the engine defaults to <code>9157</code>.
+    If this property is changed from the default, the new port address must be
+    specified in the JDBC URL when a connection is made.</p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>maximum_worker_threads</b> - The maximum number of threads that are
+    made available to process queries from remote connections.  The default
+    setting for this property is 4.  Setting this to 1 will cause the engine to
+    be single threaded for all incoming queries.  Setting this higher will
+    allow more queries to be processed concurrently.</p>
+    </li>
+  </ul></p>
+</blockquote>
+<br>
+<a name='6'></a><br><font size='+1' face='Arial' color='#0060A0'>6. Performance/Cache Settings</font>
+<blockquote>
+<p> The Mckoi engine offers a number of options for tuning the performance
+    of the database.  The default settings offer good performance for the
+    majority of applications, however sometimes it is necessary to tune
+    performance further.
+  </p>
+<p><ul>
+    <li><p><b>data_cache_size</b> - The size (in bytes) that the in-memeory data
+    cache can grow to.  The data cache stores accesses to all data in tables.  By
+    default this cache is set to 4 MB.  It is recommended that the data cache
+    should scale in size relative to the amount of data being stored in the
+    database.  It is recommended that for every 100 MB of data being stored that
+    4 MB of cache is allocated.  The 100/4 rule is a rule of thumb however, and some
+    applications may benefit from a larger cache with a smaller amount of data
+    being stored.</p>
+    <p>Example: <code>data_cache_size=8388608</code></p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>max_cache_entry_size</b> - The maximum size (in bytes) of an element
+    in the data cache.  By default the maximum size is set to 8 KB (8192 bytes).
+    Some applications that stores a lot of data that is larger than 8 KB in size
+    may find improved performance if this is increased.</p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>dont_synch_filesystem</b> - This property may be enabled or disabled
+    and by default is disabled.  The Mckoi engine file synchs all changes made to a
+    database during a commit unless this property is enabled.  A file synch will tell
+    the Operating System to make sure the copy of the data on the disk is completely
+    up to date.  When the <b>dont_synch_filesystem</b> property is enabled, the database
+    is less robust and performance is increased because the file synch incurs an
+    overhead.</p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>io_safety_level</b> - A value between 1 and 10 that represents the
+    level of safety of all IO operations to the file system where 1 is the least
+    safe and 10 is the most safe.  By default the <b>io_safety_level</b> property
+    is set to the most safe level (10).  This property can be set to a lower value
+    to improve disk write performance and disable safety features.  When the
+    <b>io_safety_level</b> property is set to 2 or below, the engine will not
+    disable journaling (for crash recovery) and will not sync file changes to
+    disk.  Setting the <b>io_safety_level</b> to a low value is only recommended
+    for environments where there is hardware protection for power failure and
+    disk crashes, and where disk write performance is an essential requirement.</p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>use_nio_if_available</b> - This property may be either enabled or
+    disabled and by default is disabled.  When <b>use_nio_if_available</b> is
+    enabled the NIO API available in Java 1.4 will be used for file access.  Using
+    NIO for file access may improve performance on some operating systems.</p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>buffered_nio_page_size</b> and <b>buffered_nio_max_pages</b> - These properties
+    alter the number and size of pages used by the NIO buffer manager.  By default
+    <b>buffered_nio_page_size</b> is set to 1 MB and <b>buffered_nio_max_pages</b> is set
+    to 64.  These properties are only used on Java 1.4 when NIO is enabled with the
+    <b>use_nio_if_available</b> property.  Different operating systems offer varying
+    performance/memory overhead associated with the use of NIO so experimentation with these
+    properties will no doubt be necessary for optimal use of NIO.</p>
+    </li>
+  </ul></p>
+<p><ul>
+    <li><p><b>buffered_io_page_size</b> and <b>buffered_io_max_pages</b> - These properties
+    alter the number and size of pages used by the IO buffer manager.  By default
+    <b>buffered_io_page_size</b> is set to 8192 and <b>buffered_io_max_pages</b> is set
+    to 256.  Multiply the values of these properties to calculate the amount of memory
+    used for IO buffering (by default 2 MB).  Performance may be improved by increasing the
+    maximum pages property if you have stored a large amount of data that is frequenty
+    accessed.</p>
+    </li>
+  </ul></p>
+</blockquote>
+<br>
+<table width="100%" cellspacing="5"><tr><td><hr size="1">
+<div align="left"><font size=-1>Last Updated: Mon Aug 16 00:27:18 PDT 2004<br></font></div>
+<div align="left"><font size=-1>Mckoi SQL Database Copyright &copy; 2000 - 2004 Diehl and Associates, Inc.  All rights reserved.<br></font></div>
+<br>
+</td></tr></table></BODY></HTML>

@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML><HEAD><TITLE>Mckoi JDBC(TM) Driver</TITLE>
+<link REL="shortcut icon" HREF="/favicon.ico" TYPE="image/x-icon">
+</HEAD>
+<body marginwidth="6" marginheight="0" leftmargin="6" rightmargin="6" topmargin="0" text="#000000" bgcolor="#FFFFFF" link="#0060A0" vlink="#001060" alink="#B00040">
+<!-- Title Header -->
+
+<table CELLSPACING="5" CELLPADDING="0" WIDTH="100%" >
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td><a href="index.html"><img SRC="mchead3_tc.gif" height="54" width="480" border="0" alt="Mckoi SQL Database"></a></td>
+</tr>
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td>
+<font face="Arial" size="-1"><a href="index.html">Home</a> / <a href="docindex.html">Documentation</a> / <a href="FAQ.html">FAQ</a> / <a href="index.html#Support">Support</a> / <a href="index.html#Download">Download</a></font><br><b><font size="+1" color="#0060A0"> Mckoi JDBC(TM) Driver</font></b></td>
+</tr>
+</table>
+
+<!-- End Title Header -->
+<h3>Mckoi JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> Driver Index</h3>
+<blockquote><ol>
+<li><a href='#1'>The JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> Interface</a><br>
+<li><a href='#2'>Installing the Driver</a><br>
+<li><a href='#3'>The Connection URL</a><br>
+<li><a href='#4'>How ResultSet works</a><br>
+<li><a href='#5'>Driver Concurrency</a><br>
+</ol></blockquote>
+<hr size='1'>
+<a name='1'></a><br><font size='+1' face='Arial' color='#0060A0'>1. The JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> Interface</font>
+<blockquote>
+<p> JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> is the standard Java interface for connecting and communicating with a
+    relational database.  Mckoi SQL Database provides an implementation of the JDBC 2.0
+    standard.  The driver is a type 4 driver which means it is written entirely in Java.   
+  </p>
+<p> The Mckoi JDBC driver currently operates in two modes - embedded and client/server
+    mode.  In embedded mode the JDBC driver starts the database engine within the current
+    Java Virtual Machine and connects to it as a local user.  Embedded mode is designed for
+    stand alone applications that require database functionality.  In client/server mode the
+    JDBC driver uses TCP/IP to communicate with a Mckoi database server running on a remote
+    machine.
+  </p>
+<p> This chapter provides details of the Mckoi JDBC driver implementation.  More general
+    information about the JDBC API can be found at <a href="http://www.javasoft.com/jdbc/">http://www.javasoft.com/jdbc/</a>.
+  </p>
+</blockquote>
+<br>
+<a name='2'></a><br><font size='+1' face='Arial' color='#0060A0'>2. Installing the Driver</font>
+<blockquote>
+<p> Before the JDBC driver can be used it must be installed in your Java
+    application.  Installing the driver is a simple procedure.  First ensure that either
+    the <code>mckoidb.jar</code> or <code>mkjdbc.jar</code> file is included in your
+    Java classpath.  If you wish to embed the database engine directly into your application
+    you need to include <code>mckoidb.jar</code> in your classpath.  If you are
+    connecting to a remote Mckoi server you should include <code>mkjdbc.jar</code>.
+  </p>
+<p> Next install the driver by adding the following lines to your
+    application's initialization code;
+  </p>
+<p><table border='0' cellpadding='5'><tr><td bgcolor='#F4F4F4'><pre>
+  <strong>try</strong> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">Class</font>.<font color="#2040a0">forName</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;com.mckoi.JDBCDriver&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>catch</strong> <font color="4444FF"><strong>(</strong></font><font color="#2040a0">Exception</font> <font color="#2040a0">e</font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#444444">// ... [ Handle error ]</font>
+  <font color="4444FF"><strong>}</strong></font>
+</pre></td></tr></table></p>
+<p> The above code will register the JDBC driver with your application so you can create
+    new connections to the database by using the <code>java.sql.DriverManager</code> object from
+    the JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> API.  If the above section of code generates an error the most likely cause is
+    that you do not have either <code>mckoidb.jar</code> or <code>mkjdbc.jar</code> in your
+    classpath.
+  </p>
+</blockquote>
+<br>
+<a name='3'></a><br><font size='+1' face='Arial' color='#0060A0'>3. The Connection URL</font>
+<blockquote>
+<p> When using the JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> API to connect to a Mckoi database, a specially formatted
+    string called the Connection URL is required to tell the driver where the database is
+    located.  The Connection URL is passed to the <code>getConnection</code> method in
+    the <code>java.sql.DriverManager</code> class of the JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> API.  The
+    Mckoi JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> driver understands two types of URL specifications;
+  </p>
+<p> <code>jdbc:mckoi://<i><b>host</b>[:<b>port</b>][/<b>schema</b>]</i>/</code>
+  </p>
+<p> This URL tells the driver to make a connection using TCP/IP to a database running
+    at the given host.  The :<b>port</b> is optional and if not given the driver will attempt to
+    connect to the default port of 9157.  The /<b>schema</b> part is also optional.
+    If the schema part is included, the JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> driver will attempt to initialize the connection
+    in the given schema after successfully connecting to the database.  If the <b>schema</b> is not
+    included in the URL, the engine will attempt to initialize the connection in a
+    schema with the same name as the username.  If the engine is unable to find the schema,
+    the connection will default to the '<code>APP</code>' schema.
+  </p>
+<p> Below is an example that demonstrates this type of URL;
+  </p>
+<p> <code>jdbc:mckoi://mydatabase.mydomain.org/MYSCHEMA/</code>
+  </p>
+<p> The above JDBC URL will attempt to connect to a Mckoi database server running on the host
+    at 'mydatabase.mydomain.org' on the default port (9157), and to change the schema to
+    <code>MYSCHEMA</code> on successful connection.
+  </p>
+<p> The second type of URL specification is for connecting to a database embedded
+    inside your application;
+  </p>
+<p> <code>jdbc:mckoi:local://<i><b>path_to_database_config</b>[/<b>schema</b>][?<b>var1</b>=<b>value1</b>&<b>var2</b>=<b>value2</b>&...]</i></code>
+  </p>
+<p> This type of URL tells the JDBC driver to start up an instance of the database
+    engine in the current Java Virtual Machine and establish a connection to it.  The
+    database is started using information in the configuration file located by
+    <b>path_to_database_config</b>.  All the configuration properties for the local database
+    may be overridden by the URL encoded variables after the <i>?</i>.  For example,
+  </p>
+<p> <code>jdbc:mckoi:local://c:/mydb/myconfig.conf?read_only=enabled&log_path=c:/mynewlogdir/</code>
+  </p>
+<p> The above example will tell the local database to start in read-only mode in
+    addition to overwriting the location of the log directory.
+  </p>
+<p> As well as establishing a connection to an already existing database, a new database can be
+    created using the <code>jdbc:mckoi:local://</code> URL specification.  This offers a useful way of
+    programatically creating and initializing a database that will later be connected to by either
+    an embedded engine or made available via a Mckoi database server.  To create a database simply add
+    <code><i>create=true</i></code> to the URL encoded variables.  For example,
+  </p>
+<p> <code>jdbc:mckoi:local://c:/mydb/myconfig.conf?create=true</code>
+  </p>
+<p> If the database already exists an error is generated and a connection will not
+    be established.  If you would like the JDBC driver to create a new database if one is
+    not found, or if a database is found establish a connection to it, add
+    <code><i>create_or_boot=true</i></code> to the JDBC URL.
+  </p>
+<p> The following Java code is an example of using a Connection URL to establish a connection 
+    to a database server running on localhost.  In the example below the user name and password
+    are 'test_user' and 'test_pass'.
+  </p>
+<p><table border='0' cellpadding='5'><tr><td bgcolor='#F4F4F4'><pre>
+<font color="0000ff"><strong>import java.sql.*;</strong></font>
+
+  ...
+  
+  <font color="#2040a0">String</font> <font color="#2040a0">username</font> <font color="4444FF">=</font> <font color="#008000">&quot;test_user&quot;</font><font color="4444FF">;</font>
+  <font color="#2040a0">String</font> <font color="#2040a0">password</font> <font color="4444FF">=</font> <font color="#008000">&quot;test_pass&quot;</font><font color="4444FF">;</font>
+  <strong>try</strong> <font color="4444FF"><strong>{</strong></font>
+    <font color="#2040a0">Connection</font> <font color="#2040a0">connection</font> <font color="4444FF">=</font> <font color="#2040a0">DriverManager</font>.<font color="#2040a0">getConnection</font><font color="4444FF"><strong>(</strong></font>
+                  <font color="#008000">&quot;jdbc:mckoi://localhost/&quot;</font>, <font color="#2040a0">username</font>, <font color="#2040a0">password</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="4444FF"><strong>}</strong></font>
+  <strong>catch</strong> <font color="4444FF"><strong>(</strong></font><font color="#2040a0">SQLException</font> <font color="#2040a0">e</font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#444444">// ... [ Handle connection problem ]</font>
+  <font color="4444FF"><strong>}</strong></font>
+</pre></td></tr></table></p>
+</blockquote>
+<br>
+<a name='4'></a><br><font size='+1' face='Arial' color='#0060A0'>4. How ResultSet works</font>
+<blockquote>
+<p> When a query is executed using a JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> Statement or PreparedStatement
+    the result of the query is made available to your application via a JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP>
+    ResultSet.  The Mckoi engine features a sophisticated scrollable result set
+    implementation that is mostly transparent to the developer but is
+    interesting enough to warrant this section in the documentation.
+  </p>
+<p> When the result of a query is found, the Mckoi JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> driver does not download
+    the entire result from the database.  The content of a ResultSet is fetched in small
+    blocks (or pages) when an application attempts to read data from the ResultSet object.
+    By default the Mckoi JDBC<SUP><FONT SIZE="-2">TM</FONT></SUP> driver fetches rows from the database in blocks of 32
+    rows at a time (this can be changed by using the <code>ResultSet.setFetchSize</code>
+    method).  Data fetched from the database is cached locally by the driver.
+  </p>
+<p> This design allows an application to efficiently construct views of large
+    data sets.  An example of where this feature is useful is a servlet that
+    displays the result of a query but has a limit of 25 records per web page.  The
+    servlet author would simply need to move the ResultSet index to the record being
+    displayed at the top of the web page and read the contents of the ResultSet to
+    the last record displayed on the page.  Even though the number of rows in the ResultSet may be
+    in the thousands, only the rows that were read are fetched from the server.
+  </p>
+<p> Another practical example of the benfits of a cached scrollable ResultSet is the
+    <code>com.mckoi.tools.JDBCQueryTool</code> program used in the tutorial section.
+    <code>JDBCQueryTool</code> uses an implementation of
+    <code>javax.swing.table.TableModel</code> to provide a view of the query result
+    that only fetches data in a row when the row is being displayed on screen.  To see how the
+    TableModel implementation in JDBCQueryTool works, browse the source code and find
+    the file <code>/src/com/mckoi/jfccontrols/ResultSetTableModel.java</code>.
+  </p>
+<p> You may be asking yourself what happens if the data in a ResultSet is updated
+    or deleted before it has been fetched from the database.  Rest assured the engine
+    handles this situation and will return the data that was the result at the time
+    the query was made.
+  </p>
+</blockquote>
+<br>
+<a name='5'></a><br><font size='+1' face='Arial' color='#0060A0'>5. Driver Concurrency</font>
+<blockquote>
+<p> The Mckoi JDBC driver is designed for multi-threaded access but only if used
+    in the correct way.  The <code>ResultSet</code>,  <code>Statement</code>
+    and <code>PreparedStatement</code> objects are <b>not</b> multi-thread safe and
+    instances of these objects may only safely be used by one thread at a time.  The
+    <code>Connection</code> object, however, is multi-thread safe.  This means an
+    application is able to safely pull <code>Statement</code> and
+    <code>PreparedStatement</code> objects from a <code>Connection</code> and distribute them
+    among multiple threads.  A <code>Statement/ResultSet</code> being used in one thread
+    will not interfere with a different <code>Statement/ResultSet</code> running
+    concurrently on a second thread.
+  </p>
+</blockquote>
+<br>
+<table width="100%" cellspacing="5"><tr><td><hr size="1">
+<div align="left"><font size=-1>Last Updated: Mon Aug 16 00:27:18 PDT 2004<br></font></div>
+<div align="left"><font size=-1>Mckoi SQL Database Copyright &copy; 2000 - 2004 Diehl and Associates, Inc.  All rights reserved.<br></font></div>
+<br>
+</td></tr></table></BODY></HTML>

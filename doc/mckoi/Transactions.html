@@ -1,0 +1,258 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML><HEAD><TITLE>Transactions</TITLE>
+<link REL="shortcut icon" HREF="/favicon.ico" TYPE="image/x-icon">
+</HEAD>
+<body marginwidth="6" marginheight="0" leftmargin="6" rightmargin="6" topmargin="0" text="#000000" bgcolor="#FFFFFF" link="#0060A0" vlink="#001060" alink="#B00040">
+<!-- Title Header -->
+
+<table CELLSPACING="5" CELLPADDING="0" WIDTH="100%" >
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td><a href="index.html"><img SRC="mchead3_tc.gif" height="54" width="480" border="0" alt="Mckoi SQL Database"></a></td>
+</tr>
+<tr ALIGN="RIGHT" VALIGN="TOP" >
+<td>
+<font face="Arial" size="-1"><a href="index.html">Home</a> / <a href="docindex.html">Documentation</a> / <a href="FAQ.html">FAQ</a> / <a href="index.html#Support">Support</a> / <a href="index.html#Download">Download</a></font><br><b><font size="+1" color="#0060A0"> Transactions</font></b></td>
+</tr>
+</table>
+
+<!-- End Title Header -->
+<h3>Transactions Index</h3>
+<blockquote><ol>
+<li><a href='#1'>Transactions Introduction</a><br>
+<li><a href='#2'>Serializable Isolation and the Multi-Version Data Model</a><br>
+<li><a href='#3'>Concurrent Commit conflicts</a><br>
+<li><a href='#4'> Failure recovery </a><br>
+<li><a href='#5'> Using transactions with the Mckoi JDBC driver </a><br>
+<li><a href='#6'> Transaction performance </a><br>
+<li><a href='#7'>Transaction Examples</a><br>
+</ol></blockquote>
+<hr size='1'>
+<a name='1'></a><br><font size='+1' face='Arial' color='#0060A0'>1. Transactions Introduction</font>
+<blockquote>
+<p> A transaction is an isolated sequence of queries that can either all be saved
+    to the database or all cancelled and ignored.  The <code><font color="#803050">COMMIT</font></code> or <code><font color="#803050">ROLLBACK</font></code>
+    commands are used to complete a transaction.  When a transaction is committed
+    any changes within a transaction are made permanent.  When a transaction is
+    rolled back all changes are lost and the database reverts back to the state
+    of the last successfully committed transaction.
+  </p>
+<p> Mckoi SQL Database supports a highly concurrent transactional model.  If
+    concurrent transactions make incompatible changes to the database (for example,
+    the same row is updated by concurrent transactions) the engine will roll back and
+    generate an exception during the commit.
+  </p>
+</blockquote>
+<br>
+<a name='2'></a><br><font size='+1' face='Arial' color='#0060A0'>2. Serializable Isolation and the Multi-Version Data Model</font>
+<blockquote>
+<p> There are four transaction isolation levels defined by the SQL standard.  Each
+    isolation level provides varying degrees of protection from seeing changes
+    made by concurrent connections.  The Mckoi database engine supports the strongest
+    isolation level defined by the standard - TRANSACTION_SERIALIZABLE.  This isolation
+    level prevents a transaction from seeing all types of concurrent changes.  The
+    Mckoi database engine achieves this through a multi-version data model that
+    efficiently manages and isolates multiple views of the underlying data.
+  </p>
+<p> During a transaction the connection sees a version (or snapshot) of the
+    database that is isolated from any changes made by other connections.  Additionally,
+    any changes made within the context of a transaction are isolated from
+    the rest of the database.  This means that while a transaction is open
+    the view a connection has of the database is blind from changes made by other
+    concurrent connections.
+  </p>
+<p> The multi-version data model allows the Mckoi database engine to avoid all
+    inter-transactional table/row locking and deadlock issues.  No tables or rows
+    are locked between concurrent transactions.  While one transaction is reading
+    from a table, another transaction may update the table at the same time.  Any
+    data consistency conflicts (for example, two connections committing a change
+    that deletes the same row from a table) are detected when a transaction
+    is committed.
+  </p>
+</blockquote>
+<br>
+<a name='3'></a><br><font size='+1' face='Arial' color='#0060A0'>3. Concurrent Commit conflicts</font>
+<blockquote>
+<p> When a transaction is committed the engine examines all the changes made
+    to the database since the transaction started.  If there are any changes that
+    conflict the transaction is rolled back.  There are four types of
+    concurrent conflicts that can occur during a commit.
+  </p>
+<p>
+    1. <b>Row Change Conflict</b> - A row was deleted or updated by this transaction
+    that was also deleted or updated by another connection after this transaction started.</p>
+<p>
+    2. <b>Updated Table Dropped Conflict</b> - A table that was updated by this transaction
+    was dropped/altered by another connection after this transaction started.</p>
+<p>
+    3. <b>Table Dropped Conflict</b> - This transaction dropped/altered a table that was
+    modified by another connection after this transaction started.</p>
+<p>
+    4. <b>Read Dirty Rows Conflict</b> - This transaction selected rows from a table
+    that was modified by another connection after this transaction started.  This conflict
+    only happens if the transaction additionally writes data to a table.</p>
+<p> Conflicts 1, 2 and 3 are required checks for maintaining data consistency.  Conflict 4
+    is for strictness to the serializable isolation level.  For the reason why we need to
+    detect conflict 4, consider the following concurrent transaction sequence;<pre>
+    +----------------------+
+    | Transaction 1 Starts |
+    +----------------------+
+    | Update Table A       |
+    +----------------------+----------------------+
+    |                      | Transaction 2 Starts |
+    +----------------------+----------------------+
+    | Commit Transaction 1 |                      |
+    +----------------------+----------------------+
+                           | Read Table A         |
+                           +----------------------+
+                           | Update Table B       |
+                           +----------------------+
+                           | Commit Transaction 2 |
+                           +----------------------+
+    </pre>
+    Transaction 2 will see the view of table A before Transaction 1 started.  It reads data
+    from table A and updates table B with information dependant on table A.  In a strictly
+    serializable system (where transactions are not able to run concurrently) Transaction 2
+    should have seen the contents of Table A when transaction 1 ends and so the read of
+    table A and the subsequent write to table B is considered erroneous.
+  </p>
+<p> <i><b>NOTE:</b> You may decide it is not necessary for your application to detect
+    conflict 4 and it can be disabled by including the line 'transaction_error_on_dirty_select=disabled'
+    in your database configuration file.  Turning off the detection of this conflict is
+    quite safe and may even offer your application a greater degree concurrency.</i>
+  </p>
+<p> Note that a serializable conflict can only happen if the transaction writes data (a
+    read-only transaction of <code><font color="#803050">SELECT</font></code>s can not cause a conflict).  Also note that a
+    transaction exception is only generated during a commit.  This means the transaction
+    retry code need only repeat on a failure to commit.  When a transaction conflict
+    occurs, the transaction is immediately rolled back and any changes are lost.  The
+    database will be left in the state of the last successfully committed transaction.
+  </p>
+</blockquote>
+<br>
+<a name='4'></a><br><font size='+1' face='Arial' color='#0060A0'>4.  Failure recovery </font>
+<blockquote>
+<p> If the database shuts down unexpectedly any uncommitted transactions are
+    automatically rolled back.  The next time the database is started it will revert
+    to the state of the last successfully committed transaction.  The engine supports a
+    very robust and redundant file structure that provides fast recovery after a
+    system failure.
+  </p>
+</blockquote>
+<br>
+<a name='5'></a><br><font size='+1' face='Arial' color='#0060A0'>5.  Using transactions with the Mckoi JDBC driver </font>
+<blockquote>
+<p> As defined in the JDBC specification, a connection initially starts with auto-commit
+    mode turned on.  Auto-commit mode implies that a <code><font color="#803050">COMMIT</font></code> is performed after
+    each query.  To gain the full benefit from transactions this is turned off by calling
+    <code>setAutoCommit(false)</code> in the JDBC java.sql.Connection instance.
+  </p>
+<p> The first access to the database implicitly opens a new transaction on the
+    connection.  The transaction remains open until a <code><font color="#803050">COMMIT</font></code> or
+    <code><font color="#803050">ROLLBACK</font></code> occurs.  To commit a transaction, call
+    <code>commit()</code> in your JDBC Connection instance.  To rollback
+    a transaction call <code>rollback()</code> in the JDBC Connection
+    instance (see the examples below).
+  </p>
+<p> An advanced feature of the Mckoi JDBC interface is the ability to
+    concurrently evaluate queries inside an open transaction.
+    Concurrent transaction table reads are permitted, but table writes require
+    exclusive access to a table.  Inner transaction locking is automatic and
+    deadlock free.  Note that the multi-version data model requires no locks
+    between transactions so a table can be read/written to concurrently from
+    multiple transactions, but not concurrently from inside one transaction.
+  </p>
+<p> Another advanced feature is that a ResultSet may remain open
+    after a transaction has committed or even rolled back, and the data will
+    remain the same as returned by the originating query (even if some of the data in
+    the ResultSet has not been fetched from the database yet).
+  </p>
+</blockquote>
+<br>
+<a name='6'></a><br><font size='+1' face='Arial' color='#0060A0'>6.  Transaction performance </font>
+<blockquote>
+<p> The commit command has a small performance overhead.  For durability reasons, a commit
+    requires a file synchronize on all updated tables.  The consequence of this is that the
+    performance of data manipulation queries can be poor when auto-commit is enabled.  <code><font color="#803050">INSERT</font></code>,
+    <code><font color="#803050">DELETE</font></code> and <code><font color="#803050">UPDATE</font></code> are much faster without the commit.  A
+    significant gain in performance and safety is found by turning auto-commit off during
+    large batches of these types of queries and committing all the changes in a single transaction
+    with one call to commit.
+  </p>
+</blockquote>
+<br>
+<a name='7'></a><br><font size='+1' face='Arial' color='#0060A0'>7. Transaction Examples</font>
+<blockquote>
+<p> The following example demonstrates a transaction sequence and a concurrent conflict;
+  </p>
+<p><table border='0' cellpadding='5'><tr><td bgcolor='#F4F4F4'><pre>
+  <font color="#444444">// Create two JDBC connections to the database.</font>
+  <font color="#2040a0">Connection</font> <font color="#2040a0">connection1</font> <font color="4444FF">=</font> ....
+  <font color="#2040a0">Connection</font> <font color="#2040a0">connection2</font> <font color="4444FF">=</font> ....
+  <font color="#444444">// Create two statements for each connection.</font>
+  <font color="#2040a0">Statement</font> <font color="#2040a0">s1</font> <font color="4444FF">=</font> <font color="#2040a0">connection1</font>.<font color="#2040a0">createStatement</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#2040a0">Statement</font> <font color="#2040a0">s2</font> <font color="4444FF">=</font> <font color="#2040a0">connection2</font>.<font color="#2040a0">createStatement</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Turn auto commit off.</font>
+  <font color="#2040a0">connection1</font>.<font color="#2040a0">setAutoCommit</font><font color="4444FF"><strong>(</strong></font><strong>false</strong><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#2040a0">connection2</font>.<font color="#2040a0">setAutoCommit</font><font color="4444FF"><strong>(</strong></font><strong>false</strong><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Create a table, populate it with two values, and commit</font>
+  <font color="#444444">// the transaction.</font>
+  <font color="#2040a0">s1</font>.<font color="#2040a0">executeQuery</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;CREATE TABLE Test ( col INTEGER )&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#2040a0">s1</font>.<font color="#2040a0">executeQuery</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;INSERT INTO Test VALUES ( 10 ), ( 20 )&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#2040a0">connection1</font>.<font color="#2040a0">commit</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// After the commit, insert a third value into the table</font>
+  <font color="#444444">// from connection1.</font>
+  <font color="#2040a0">s1</font>.<font color="#2040a0">executeQuery</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;INSERT INTO Test VALUES ( 15 )&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// This result will contain 3 values.</font>
+  <font color="#2040a0">ResultSet</font> <font color="#2040a0">result1</font> <font color="4444FF">=</font> <font color="#2040a0">s1</font>.<font color="#2040a0">executeQuery</font><font color="4444FF"><strong>(</strong></font>
+                  <font color="#008000">&quot;SELECT * FROM Test ORDER BY col&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Perform the same query, but from connection 2.</font>
+  <font color="#444444">// This result will contain 2 values.  It won't see the</font>
+  <font color="#444444">// uncommitted insert made by connection 1.</font>
+  <font color="#2040a0">ResultSet</font> <font color="#2040a0">result2</font> <font color="4444FF">=</font> <font color="#2040a0">s2</font>.<font color="#2040a0">executeQuery</font><font color="4444FF"><strong>(</strong></font>
+                  <font color="#008000">&quot;SELECT * FROM Test ORDER BY col&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Commit the change make on connection 1</font>
+  <font color="#2040a0">connection1</font>.<font color="#2040a0">commit</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Perform query on connection 2 again.</font>
+  <font color="#444444">// This result will still only contain 2 values because</font>
+  <font color="#444444">// connection 2 is isolated from all committed changes</font>
+  <font color="#444444">// made to the database.</font>
+  <font color="#2040a0">result2</font> <font color="4444FF">=</font> <font color="#2040a0">s2</font>.<font color="#2040a0">executeQuery</font><font color="4444FF"><strong>(</strong></font>
+                  <font color="#008000">&quot;SELECT * FROM Test ORDER BY col&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Insert a value into the table on connection 2</font>
+  <font color="#2040a0">s2</font>.<font color="#2040a0">executeQuery</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;INSERT INTO Test VALUES ( 25 )&quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <font color="#444444">// Commit the changes made in connection 2.</font>
+  <font color="#444444">// A transaction error will occur here (conflict type 4)</font>
+  <font color="#444444">// We selected from a table that had concurrent changes</font>
+  <font color="#444444">// made to it.</font>
+  <font color="#2040a0">s2</font>.<font color="#2040a0">commit</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  </pre></td></tr></table></p>
+<p> The following code demonstrates how to retry a failed commit;
+  </p>
+<p><table border='0' cellpadding='5'><tr><td bgcolor='#F4F4F4'><pre>
+  <font color="#444444">// Create the connection statement</font>
+  <font color="#2040a0">Statement</font> <font color="#2040a0">s1</font> <font color="4444FF">=</font> <font color="#2040a0">connection1</font>.<font color="#2040a0">createStatement</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+  <strong>boolean</strong> <font color="#2040a0">committed</font> <font color="4444FF">=</font> <strong>false</strong><font color="4444FF">;</font>
+  <strong>while</strong> <font color="4444FF"><strong>(</strong></font><font color="4444FF">!</font><font color="#2040a0">committed</font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+    <font color="#444444">// Update the salary of all employees whose name starts</font>
+    <font color="#444444">// with 'T'.</font>
+    <font color="#2040a0">s1</font>.<font color="#2040a0">executeQuery</font><font color="4444FF"><strong>(</strong></font><font color="#008000">&quot;UPDATE Employee SET salary = salary * 1.25 &quot;</font> <font color="4444FF">+</font>
+                    <font color="#008000">&quot; WHERE name LIKE 'T%' &quot;</font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+    <strong>try</strong> <font color="4444FF"><strong>{</strong></font>
+      <font color="#444444">// Attempt to commit.</font>
+      <font color="#2040a0">connection1</font>.<font color="#2040a0">commit</font><font color="4444FF"><strong>(</strong></font><font color="4444FF"><strong>)</strong></font><font color="4444FF">;</font>
+      <font color="#444444">// Success.</font>
+      <font color="#2040a0">committed</font> <font color="4444FF">=</font> <strong>true</strong><font color="4444FF">;</font>
+    <font color="4444FF"><strong>}</strong></font>
+    <strong>catch</strong> <font color="4444FF"><strong>(</strong></font><font color="#2040a0">SQLException</font> <font color="#2040a0">e</font><font color="4444FF"><strong>)</strong></font> <font color="4444FF"><strong>{</strong></font>
+      <font color="#444444">// Failed to commit, so retry the query</font>
+    <font color="4444FF"><strong>}</strong></font>
+  <font color="4444FF"><strong>}</strong></font>
+  <font color="#444444">// Successfully committed.</font>
+  </pre></td></tr></table></p>
+</blockquote>
+<br>
+<table width="100%" cellspacing="5"><tr><td><hr size="1">
+<div align="left"><font size=-1>Last Updated: Mon Aug 16 00:27:18 PDT 2004<br></font></div>
+<div align="left"><font size=-1>Mckoi SQL Database Copyright &copy; 2000 - 2004 Diehl and Associates, Inc.  All rights reserved.<br></font></div>
+<br>
+</td></tr></table></BODY></HTML>
