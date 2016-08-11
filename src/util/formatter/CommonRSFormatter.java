@@ -34,7 +34,7 @@ public abstract class CommonRSFormatter implements RSFormatter
 		this.os=os;
 		formatRSImpl(rs);
 		os.flush();
-		os.close();
+//		os.close();
 	}
 
 //=============================================================================
