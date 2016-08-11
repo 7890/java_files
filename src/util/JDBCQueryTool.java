@@ -68,6 +68,10 @@ import javax.swing.DefaultListModel;
 
 public class JDBCQueryTool extends JComponent {
 
+	private static Dimension scrolly_result_table_pref=new Dimension(1000, 400);
+	private static JSplitPane northsplit_pane;
+	private static int northSplitPos=300;
+
   /**
    * The agent used to make queries on the JDBC connection.
    */
@@ -293,7 +297,8 @@ public class JDBCQueryTool extends JComponent {
     }
 
     //
-    JSplitPane northsplit_pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+    //JSplitPane 
+    northsplit_pane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     northsplit_pane.setLeftComponent(scroll_dbTree);
     // replaced immediately below        northsplit_pane.setRightComponent(query_area);
 
@@ -346,7 +351,8 @@ public class JDBCQueryTool extends JComponent {
     table_model = new ResultSetTableModel();
     result_table = new JTable(table_model);
     JScrollPane scrolly_result_table = new JScrollPane(result_table);
-    scrolly_result_table.setPreferredSize(new Dimension(650, 550));
+//    scrolly_result_table.setPreferredSize(new Dimension(650, 550));
+    scrolly_result_table.setPreferredSize(scrolly_result_table_pref);
 
     // The status bar.
     status_text = new JLabel("  ");
@@ -526,6 +532,7 @@ public class JDBCQueryTool extends JComponent {
 
     // Pack and show the window.
     frame.pack();
+    northsplit_pane.setDividerLocation(northSplitPos);
     frame.show();
 
     // If frame is closed then perform the close action.
