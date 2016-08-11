@@ -29,6 +29,12 @@ public class ExecSQL
 	private static String errorSepBegin="--ERR begin-------------";
 	private static String errorSepEnd=  "--ERR end---------------";
 
+	private static CSVRSFormatter csv = new CSVRSFormatter();
+	private static HTMLRSFormatter html = new HTMLRSFormatter(false);
+	private static HTMLStyledRSFormatter html_styled = new HTMLStyledRSFormatter(true);
+
+	private static OutputStreamWriter osw = new OutputStreamWriter(System.out);
+
 //=============================================================================
 	public static void main(String[] args) throws Exception
 	{
@@ -66,6 +72,7 @@ public class ExecSQL
 	{
 		System.err.println("closing connection to database.");
 		db_connection.close();
+		osw.close();
 	}
 
 //=============================================================================
@@ -93,6 +100,7 @@ public class ExecSQL
 			}
 		}
 		//System.err.println(sb);
+		reader.close();
 	}//end processStdIn()
 
 //=============================================================================
@@ -113,12 +121,14 @@ public class ExecSQL
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
 
-//		System.out.println((new CSVRSFormatter()).formatRS(rs));
-//		System.out.println((new HTMLRSFormatter(false)).formatRS(rs));
-//		System.out.println((new HTMLStyledRSFormatter(true)).formatRS(rs));
-		(new CSVRSFormatter()).formatRS(rs,new OutputStreamWriter(System.out));
-//		(new HTMLStyledRSFormatter(true)).formatRS(rs,new OutputStreamWriter(System.out));
+		//csv.formatRS(rs);
+		//html.formatRS(rs);
+		//html_styled.formatRS(rs);
+		//csv.formatRS(rs,osw);
+		html_styled.formatRS(rs,osw);
+
 		System.err.println("done.");
+		rs.close();
 	}
 }//end class ExecSQL
 //EOF
