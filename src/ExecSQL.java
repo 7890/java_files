@@ -124,8 +124,8 @@ public class ExecSQL
 		//csv.formatRS(rs);
 		//html.formatRS(rs);
 		//html_styled.formatRS(rs);
-		//csv.formatRS(rs,osw);
-		html_styled.formatRS(rs,osw);
+		csv.formatRS(rs,osw);
+		//html_styled.formatRS(rs,osw);
 
 		System.err.println("done.");
 		rs.close();
