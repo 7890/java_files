@@ -3,7 +3,7 @@
 if [ $# -ne 3 ]
 then
 	echo "syntax error. need 4 parameters:" >&2
-	echo "[table name] [file name] [number of processes]" >&2
+	echo "[table name] [file name] [number of file parts]" >&2
 	echo "example:" >&2
 	echo "myfiles myfiles.dump 4" >&2
 	exit 1
@@ -27,7 +27,7 @@ echo "using $PROC processes"
 
 ls -1 "$PARTS"/sql_import_part_* | while read line
 do
-	CMD_FILE=`mktemp`
+	CMD_FILE=`mktemp -p $PARTS`
 
 	echo -n "import " > "$CMD_FILE"
 	echo -n "$TABLE " >>  "$CMD_FILE"
@@ -38,8 +38,7 @@ do
 
 	echo "===================launching in background"
 	java -cp .:archive/mckoidb.jar:_build util.Impex -f "$CMD_FILE" -url "jdbc:mckoi://localhost" -u "admin" -p "admin" &
-	sleep 2
-	rm -f "$CMD_FILE"
+	sleep 1
 done
 
 rm -rf "$PARTS"
