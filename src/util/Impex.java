@@ -243,7 +243,7 @@ public class Impex extends Object {
 	  } catch(Exception e) {
 	    err = "Can't export table " + tablename + " to file " + filename + " Exception " + e;
 	    System.out.println( err );
-	    //e.printStackTrace();
+	    e.printStackTrace();
 	  }
 	}
 
@@ -372,7 +372,7 @@ public class Impex extends Object {
 		  temp = br.readLine();
 		  if (temp != null) temp = temp.trim();
 
-		  System.out.println("Record rowcount" + rowcount );
+		  System.out.println("Record rowcount " + rowcount );
 		  continue;
 		}
 	        temp = temp.replaceAll(  "\\\\u000A", "\n" );
@@ -526,19 +526,23 @@ public class Impex extends Object {
 	} catch(Exception e) {
 	  temp = rsm.getValueAt(i,j).toString();
 	}
-	temp = temp.replaceAll( "\\\\", "\\\\u005C" );
-	temp = temp.replaceAll( linesep, "\\\\u000A" );
-	temp = temp.replaceAll( "\b", "\\\\u0008" );
-	temp = temp.replaceAll( "\t", "\\\\u0009" );
-	temp = temp.replaceAll( "\r", "\\\\u000D" );
-	temp = temp.replaceAll( "\f", "\\\\u000C" );
-	temp = temp.replaceAll( "\'", "\\\\u0027" );
-	temp = temp.replaceAll( "\"", "\\\\u0022" );
-	if (isString) {
-	  pw.write( "'" + temp + "'" );
-	} else {
-	  pw.write( temp );
+	if(temp!=null)
+	{
+		temp = temp.replaceAll( "\\\\", "\\\\u005C" );
+		temp = temp.replaceAll( linesep, "\\\\u000A" );
+		temp = temp.replaceAll( "\b", "\\\\u0008" );
+		temp = temp.replaceAll( "\t", "\\\\u0009" );
+		temp = temp.replaceAll( "\r", "\\\\u000D" );
+		temp = temp.replaceAll( "\f", "\\\\u000C" );
+		temp = temp.replaceAll( "\'", "\\\\u0027" );
+		temp = temp.replaceAll( "\"", "\\\\u0022" );
+		if (isString) {
+		  pw.write( "'" + temp + "'" );
+		} else {
+		  pw.write( temp );
+		}
 	}
+
 	if ( j == (ncols-1)) {
 	  pw.println( "" );
 	} else {
