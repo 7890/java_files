@@ -89,17 +89,17 @@ public class Impex extends Object {
       helpSyntax();
 
     } else if (username == null) {
-      System.out.println("Please provide a username");
-      System.out.println();
+      System.err.println("Please provide a username");
+      System.err.println();
       printSyntax();
 
     } else if (password == null) {
-      System.out.println("Please provide a password");
-      System.out.println();
+      System.err.println("Please provide a password");
+      System.err.println();
       printSyntax();
     } else {
       try {
-        System.out.println("Using JDBC Driver: " + driver);
+        System.err.println("Using JDBC Driver: " + driver);
 
         // Register the driver.
         Class.forName(driver).newInstance();
@@ -108,9 +108,9 @@ public class Impex extends Object {
         connection = DriverManager.getConnection(url, username, password);
 
         if (connection != null) {
-	  System.out.println("Connection established to: " + url);
+	  System.err.println("Connection established to: " + url);
 	} else {
-	  System.out.println("No connection to: " + url + " - severe error.");
+	  System.err.println("No connection to: " + url + " - severe error.");
 	  return;
 	}
 
@@ -149,14 +149,14 @@ public class Impex extends Object {
           }
           fin.close();
         } catch (IOException ioex) {
-          System.out.println( "Unable to open Import/Export command file " + cmdfilename );
+          System.err.println( "Unable to open Import/Export command file " + cmdfilename );
         }
 	
 	// Finished
 
         connection.close();
 
-      } catch (ClassNotFoundException e) {System.out.println("JDBC Driver not found.");}
+      } catch (ClassNotFoundException e) {System.err.println("JDBC Driver not found.");}
         catch (Exception e) {e.printStackTrace();}
     }
   }
@@ -207,11 +207,11 @@ public class Impex extends Object {
 	if (st.hasMoreTokens()) {
 	  tablename = st.nextToken();
 
-	  System.out.println("Tablename >" + tablename +"<");
+	  System.err.println("Tablename >" + tablename +"<");
 
 	  String[] ns = tablename.split("\\.", 2);
 
-	  System.out.println("ns length >" + ns.length +"<");
+	  System.err.println("ns length >" + ns.length +"<");
 
 	  if (ns.length > 1) {
 	    tablename = ns[1];
@@ -223,7 +223,7 @@ public class Impex extends Object {
 	  if (st.hasMoreTokens()) {
 	    filename = st.nextToken();
 	  }
-          System.out.println("Exporting " + schema + "." + tablename + " to " + filename );
+          System.err.println("Exporting " + schema + "." + tablename + " to " + filename );
 
 	  try {
 	    PrintWriter exporter = new PrintWriter( new BufferedWriter( new FileWriter(filename) ) );
@@ -233,8 +233,8 @@ public class Impex extends Object {
             ResultSet rset = executeQuery(qry);
             ntm.updateResultSet(rset);
 
-	    // System.out.println( "Export sql :" + sqlstring );
-	    System.out.println( "Result set rows = " + ntm.getRowCount() );
+	    // System.err.println( "Export sql :" + sqlstring );
+	    System.err.println( "Result set rows = " + ntm.getRowCount() );
 
 	    csvprint( ntm, exporter );
 	    exporter.flush();
@@ -242,7 +242,7 @@ public class Impex extends Object {
 
 	  } catch(Exception e) {
 	    err = "Can't export table " + tablename + " to file " + filename + " Exception " + e;
-	    System.out.println( err );
+	    System.err.println( err );
 	    e.printStackTrace();
 	  }
 	}
@@ -287,8 +287,8 @@ public class Impex extends Object {
 	    } catch(Exception e) {
 	      err = "File " + filename + " could not be read, exception " + e;
 	      //e.printStackTrace();
-	      System.out.println( err );
-	      System.out.println( err + "Can't Import this file");
+	      System.err.println( err );
+	      System.err.println( err + "Can't Import this file");
               return;
 	    }
 
@@ -323,21 +323,21 @@ public class Impex extends Object {
 		    ctype = rs.getInt(5);
 		    columns.add( columnname );
 		    ctypes.add( new Integer(ctype) );
-		    // System.out.println("Metadata Column " + columnname + " type " + ctype );
+		    // System.err.println("Metadata Column " + columnname + " type " + ctype );
 		    i++;
 		  }
 		  if (i == 0) {
-	            System.out.println( "No columns in table " + tablename + "Can't Import this file");
+	            System.err.println( "No columns in table " + tablename + "Can't Import this file");
 	            return;
 		  }
 		} else {
-	          System.out.println("Null Result set from table " + tablename);
+	          System.err.println("Null Result set from table " + tablename);
 		  return;
 		}
 		csize = columns.size();
 		columnType = new int[csize];
 
-		insSql1 = "Insert into " + schema + "." + tablename + " (" + (String)columns.elementAt(0);
+		insSql1 = "Insert into " + schema + "." + tablename + " (" + "\""+(String)columns.elementAt(0)+"\"";
 		insSql2 = " ) VALUES( ?";
 		String keyval;
 		columnType[0] = ((Integer)ctypes.elementAt(0)).intValue();
@@ -345,25 +345,27 @@ public class Impex extends Object {
 		for (i=1;i<csize;i++) {
 		  keyval = (String)columns.elementAt(i);
 		  columnType[i] = ((Integer)ctypes.elementAt(i)).intValue();
-		  insSql1 = insSql1 + ", " + keyval;
+		  insSql1 = insSql1 + ", " + "\""+keyval+"\"";
 		  insSql2 = insSql2 + ", ?";
 		}
 		insSql1 = insSql1 + insSql2 + ")";
 
 	      } catch(Exception me) {
 	        err = "Can't get metadata for table " + tablename + " Exception " + me;
-		System.out.println("SQL so far: " + insSql1 + insSql2);
+		System.err.println("SQL so far: " + insSql1 + insSql2);
 		//me.printStackTrace();
-	        System.out.println( err + "Can't Import this file");
+	        System.err.println( err + "Can't Import this file");
 	        return;
 	      }
+
+              System.err.println(insSql1);
 
 	      // Build a prepared statement with the right number of ?s
 	      pstmt = connection.prepareStatement( insSql1 );
 
 
-	      System.out.println("Inserting data from " + filename + " to table " + schema + "." + tablename );
-	      // System.out.println("SQL is " + insSql1 );
+	      System.err.println("Inserting data from " + filename + " to table " + schema + "." + tablename );
+	      // System.err.println("SQL is " + insSql1 );
 	      count = 0;
 	      rowcount = 0;
 
@@ -372,7 +374,7 @@ public class Impex extends Object {
 		  temp = br.readLine();
 		  if (temp != null) temp = temp.trim();
 
-		  System.out.println("Record rowcount " + rowcount );
+		  System.err.println("Record rowcount " + rowcount );
 		  continue;
 		}
 	        temp = temp.replaceAll(  "\\\\u000A", "\n" );
@@ -420,7 +422,7 @@ public class Impex extends Object {
 		          pstmt.setString(ic, null);
 			} else {
 		          pstmt.setString(ic, getCommaDelim( temp, ic ) );
-			  // System.out.println("Field " + ic + " Type " + columnType[i] +" Value " + getCommaDelim( temp, ic ) + "\n" );
+			  //System.err.println("Field " + ic + " Type " + columnType[i] +" Value " + getCommaDelim( temp, ic ) + "\n" );
 			}
 		        break;
 		      case java.sql.Types.ARRAY:
@@ -432,23 +434,23 @@ public class Impex extends Object {
 		      case java.sql.Types.STRUCT:
 	                err = "Column " + ic + " in table " + tablename + " type " + columnType[i] +
 			             " - Sorry, I don't know how to handle this type. Send the coder a nastygram. ";
-		        System.out.println(err );
-	                System.out.println("Can't Import this file");
+		        System.err.println(err );
+	                System.err.println("Can't Import this file");
 	                return;
 		      case java.sql.Types.OTHER:
 		      default:
 	                err = "Column " + ic + " in table " + tablename + " Value " + temp +
 			             " Undefined type " + columnType[i];
-		        System.out.println(err );
-	                System.out.println( "Can't Import this file");
+		        System.err.println(err );
+	                System.err.println( "Can't Import this file");
 	                return;
 		    }
 		  }
 		} catch(Exception me) {
 	          err = "Column " + ic + " in table " + tablename + " Value " + temp + " Exception " + me;
-		  System.out.println(err );
+		  System.err.println(err );
 		  //me.printStackTrace();
-	          System.out.println("Can't Import this file");
+	          System.err.println("Can't Import this file");
 	          return;
 		}
 
@@ -456,13 +458,13 @@ public class Impex extends Object {
 
 		if (rcode == 1) {
 		  rowcount++;
-		  // System.out.println("Imported record " + count );
+		  // System.err.println("Imported record " + count );
 		} else {
 		  err = "Failed to insert record " + count + "Warning was " + pstmt.getWarnings();
-		  System.out.println( err );
-	          System.out.println("Can't Import this file");
+		  System.err.println( err );
+	          System.err.println("Can't Import this file");
                   executeQuery(new Query("ROLLBACK"));
-		  System.out.println("Rolled back from import. ");
+		  System.err.println("Rolled back from import. ");
 	          return;
 		}
 		temp = br.readLine();
@@ -471,20 +473,21 @@ public class Impex extends Object {
 	      }
 
               executeQuery(new Query("COMMIT"));
-	      System.out.println("Imported " + rowcount + " records. " );
-	      System.out.println("Import Complete. ");
+	      System.err.println("Imported " + rowcount + " records. " );
+	      System.err.println("Import Complete. ");
 
 	    } catch(Exception e) {
 	      err = "Can't import table " + tablename + " from file " + filename + " Exception " + e;
 	      //e.printStackTrace();
-	      System.out.println( err );
-	      System.out.println("Sqlstring was " + sqlstring );
+	      System.err.println( err );
+	      System.err.println("Sqlstring was " + sqlstring );
+              e.printStackTrace();
 	      try {
                 executeQuery(new Query("ROLLBACK"));
-		System.out.println("Rolled back from import. ");
+		System.err.println("Rolled back from import. ");
 	      } catch(Exception e2) {
 		//e2.printStackTrace();	      }
-	        System.out.println( err + "Can't Import this file");
+	        System.err.println( err + "Can't Import this file");
 	      }
 	    }
 	  }
@@ -493,11 +496,11 @@ public class Impex extends Object {
 	return;
 
       } else  {
-	System.out.println("Unrecognised command: " + qtext);
+	System.err.println("Unrecognised command: " + qtext);
       }
 
     } catch (Exception e) {
-      System.out.println( "Exceptio e " + e);
+      System.err.println( "Exceptio e " + e);
       e.printStackTrace();
     }
   }
@@ -702,7 +705,7 @@ public class Impex extends Object {
       rs = statement.executeQuery();
 
     } catch(Exception e) {
-      System.out.println("Failure Exception " + e);
+      System.err.println("Failure Exception " + e);
       e.printStackTrace();
     }
     return rs;
