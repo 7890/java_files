@@ -365,7 +365,7 @@ public class ForAllFilesDo
 		byte[] buffer = new byte[64000]; ///
 		if(md==null)
 		{
-			MessageDigest md = MessageDigest.getInstance("MD5");
+			md = MessageDigest.getInstance("MD5");
 		}//otherwise use existing
 		DigestInputStream dis = new DigestInputStream(new FileInputStream(_f), md);
 
