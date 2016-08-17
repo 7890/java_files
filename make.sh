@@ -57,13 +57,11 @@ compile()
 	#don't build tests (uses junit)
 	rm -rf commons-cli-1.3.1-src/src/test
 
-	shopt -s globstar
-
 	$JAVAC -classpath "$DIR" -sourcepath "$build"/commons-cli-1.3.1-src -d "$build" \
 		"$build"/commons-cli-1.3.1-src/**/*.java
 
 	$JAVAC -classpath "$DIR":"$build":"$MCKOI":"$TIKA" -sourcepath "$src" -d "$build" \
-		"$src"/*.java "$src"/util/*.java "$src"/interfaces/*.java "$src"/hooks/*.java
+		"$src"/**/*.java
 }
 
 #========================================================================
@@ -76,7 +74,6 @@ create_mckoi_javadoc()
 	unzip mckoi1.0.6.zip
 	mv mckoi1.0.6/src.zip .
 	unzip src.zip
-	shopt -s globstar
 	javadoc src/**/*.java
 #	rm -rf src
 	rm -rf mckoi1.0.6
@@ -100,7 +97,8 @@ init_db()
 
 	echo "initializing database..."
 	#create database in sub directory "data" (see db.conf)
-	$JAVA -jar "$MCKOI" -conf "$DB_CONF" -dbpath "$DB_DATA_PATH" -create "$USER" "$PW"
+	###$JAVA -jar "$MCKOI" -conf "$DB_CONF" -dbpath "$DB_DATA_PATH" -create "$USER" "$PW"
+	$JAVA -cp "$build":"$MCKOI" com.mckoi.runtime.McKoiDBMain -conf "$DB_CONF" -dbpath "$DB_DATA_PATH" -create "$USER" "$PW"
 
 	echo "new database created."
 	echo "start database server now (./start_server.sh) in another terminal now and hit enter"
@@ -149,6 +147,13 @@ for tool in java javac jar javadoc unzip; \
 
 mkdir -p "$build"
 rm -rf "$build"/*
+
+#this only works with bash...
+shopt -s globstar
+
+#build all functions in com/mckoi/database/* -> pre-requisite to start server with function_factories=xxx
+$JAVAC -classpath "$DIR":"$MCKOI" -sourcepath "$src" -d "$build" \
+                "$src"/com/**/*.java
 
 #create_mckoi_javadoc
 compile
