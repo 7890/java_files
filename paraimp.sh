@@ -2,8 +2,8 @@
 
 if [ $# -ne 3 ]
 then
-	echo "syntax error. need 4 parameters:" >&2
-	echo "[table name] [file name] [number of file parts]" >&2
+	echo "syntax error. need 3 parameters:" >&2
+	echo "[table name] [file name] [split file to n parts]" >&2
 	echo "example:" >&2
 	echo "myfiles myfiles.dump 4" >&2
 	exit 1
