@@ -1,8 +1,11 @@
+import interfaces.*;
 import util.*;
 import util.formatter.*;
 
 import java.io.*;
 import java.sql.*;
+
+import java.lang.reflect.Constructor;
 
 //execute SQL string from stdin
 //statements must end with ;\n
@@ -22,6 +25,8 @@ public class ExecSQL
 
 	public static String db_username = "admin";
 	public static String db_password = "admin";
+
+	public static String formatter_class="util.formatter.CSVRSFormatter";
 	//===end configurable parameters
 
 	private static Connection db_connection;
@@ -29,20 +34,30 @@ public class ExecSQL
 	private static String errorSepBegin="--ERR begin-------------";
 	private static String errorSepEnd=  "--ERR end---------------";
 
+/*
 	private static CSVRSFormatter csv = new CSVRSFormatter();
 	private static HTMLRSFormatter html = new HTMLRSFormatter(false);
 	private static HTMLStyledRSFormatter html_styled = new HTMLStyledRSFormatter(true);
+	...
+	formatter class now read from properties
+*/
+	private static RSFormatter rsf=null;
 
 	private static OutputStreamWriter osw = new OutputStreamWriter(System.out);
 
 //=============================================================================
 	public static void main(String[] args) throws Exception
 	{
-		if(!LProps.load(propertiesFileUri,ExecSQL.class))
+		if(!LProps.load(propertiesFileUri,new ExecSQL())) ///works because static. ExecSQL.class doesn't
 		{
 			System.err.println("/!\\ could not load properties");
 		}
 		connectDb();
+
+		Class<?> c = Class.forName(formatter_class);
+		Constructor<?> cons = c.getConstructor();
+		rsf=((RSFormatter)cons.newInstance());
+
 		System.err.println("unrequested mini how-to:");
 		System.err.println("lines starting with '--' are ignored (comments).");
 		System.err.println("statements must end with ';'.");
@@ -59,6 +74,7 @@ public class ExecSQL
 			{
 				System.err.println("/!\\ error (bogus SQL statement?)");
 				System.err.println(errorSepBegin+"\n"+e.getMessage()+"\n"+errorSepEnd);
+				e.printStackTrace();
 				System.err.println("reading next statement from stdin now:");
 			}
 		}
@@ -116,16 +132,15 @@ public class ExecSQL
 	private static void execQuery(String sql_statement) throws Exception
 	{
 		System.err.println("executing query...");
+//		System.err.println(sql_statement);
 		ResultSet rs=db_connection.createStatement().executeQuery(sql_statement);
 
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
 
 		//csv.formatRS(rs);
-		//html.formatRS(rs);
-		//html_styled.formatRS(rs);
-		csv.formatRS(rs,osw);
-		//html_styled.formatRS(rs,osw);
+		//csv.formatRS(rs,osw);
+		rsf.formatRS(rs,osw);
 
 		System.err.println("done.");
 		rs.close();
