@@ -43,7 +43,7 @@ public class ExecSQL
 */
 	private static RSFormatter rsf=null;
 
-	private static OutputStreamWriter osw = new OutputStreamWriter(System.out);
+	private static OutputStreamWriter osw = new OutputStreamWriter(new BufferedOutputStream(System.out));
 
 //=============================================================================
 	public static void main(String[] args) throws Exception
@@ -141,6 +141,9 @@ public class ExecSQL
 		//csv.formatRS(rs);
 		//csv.formatRS(rs,osw);
 		rsf.formatRS(rs,osw);
+		osw.flush();
+
+		//don't close osw here
 
 		System.err.println("done.");
 		rs.close();
