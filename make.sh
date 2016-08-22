@@ -116,7 +116,7 @@ init_db()
 create_run_scripts()
 {
 	echo "#!/bin/sh" > "$DIR"/ForAllFilesDo.sh
-	echo $JAVA -classpath "$DIR":"$build":"$MCKOI":"$TIKA" \\ >> "$DIR"/ForAllFilesDo.sh
+	echo $JAVA -classpath .:"$DIR":"$build":"$MCKOI":"$TIKA" \\ >> "$DIR"/ForAllFilesDo.sh
 	echo '	ForAllFilesDo $@' >> "$DIR"/ForAllFilesDo.sh
 	chmod +x "$DIR"/ForAllFilesDo.sh
 #	$JAVA -classpath "$DIR":"$build":"$MCKOI":"$TIKA" ForAllFilesDo .
@@ -125,7 +125,7 @@ create_run_scripts()
 #	cat /tmp/out.txt | grep "\[Loaded" | grep "\.jar" | rev | cut -d"/" -f1 | rev | sort | uniq | cut -d"]" -f1 >/tmp/jars.txt
 
 	echo "#!/bin/sh" > "$DIR"/ExecSQL.sh
-	echo $JAVA -classpath "$DIR":"$build":"$MCKOI" \\ >> "$DIR"/ExecSQL.sh
+	echo $JAVA -classpath .:"$DIR":"$build":"$MCKOI" \\ >> "$DIR"/ExecSQL.sh
 	echo '  ExecSQL $@' >> "$DIR"/ExecSQL.sh
 	chmod +x "$DIR"/ExecSQL.sh
 #	echo "test querying database"
@@ -133,7 +133,7 @@ create_run_scripts()
 #	echo "select count(*) from tbl_file;" | $JAVA -classpath "$DIR":"$build":"$MCKOI":"$TIKA" ExecSQL
 
 	echo "#!/bin/sh" > "$DIR"/start_contrib_gui.sh
-	echo $JAVA -classpath "$DIR":"$build":"$MCKOI" \\ >> "$DIR"/start_contrib_gui.sh
+	echo $JAVA -classpath .:"$DIR":"$build":"$MCKOI" \\ >> "$DIR"/start_contrib_gui.sh
 	echo '  util.JDBCQueryTool -url "jdbc:mckoi://localhost" -u "admin" -p "admin"' >> "$DIR"/start_contrib_gui.sh
 
 	chmod +x "$DIR"/start_contrib_gui.sh
