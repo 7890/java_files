@@ -166,7 +166,7 @@ public class AddFileToDb implements ProcessFileHook
 			else
 			{
 				///dummy, create link
-				link="foo"+System.currentTimeMillis();
+				link="foo_basket_"+System.currentTimeMillis();
 			}
 
 			//create basket
@@ -353,8 +353,21 @@ public class AddFileToDb implements ProcessFileHook
 		if(cmd.hasOption("l"))
 		{
 			///dummy, create link
-			String link="foo"+System.currentTimeMillis();
-			ps_insert_file_link_(file_id,link);
+			///String link="foo"+System.currentTimeMillis();
+			///ps_insert_file_link_(file_id,link);
+			//create link using displayname (can conflict with existing, same names)
+			///ps_insert_file_link_(file_id,displayName);
+
+			String autolink=_f.getPath().trim();
+			if(autolink.startsWith("."))
+			{
+				autolink=autolink.substring(1,autolink.length());
+			}
+			if(autolink.startsWith("/"))
+			{
+				autolink=autolink.substring(1,autolink.length());
+			}
+			ps_insert_file_link_(file_id,autolink);
 		}
 		else if(cmd.hasOption("L"))
 		{
