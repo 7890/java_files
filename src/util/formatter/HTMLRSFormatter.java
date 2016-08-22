@@ -25,10 +25,36 @@ public class HTMLRSFormatter extends CommonRSFormatter
 	}
 
 //=============================================================================
+	public HTMLRSFormatter(int from_record_index, int record_count)
+	{
+		this.from_record_index=from_record_index;
+		this.record_count=record_count;
+	}
+
+//=============================================================================
+	public HTMLRSFormatter(boolean complete_html, int from_record_index, int record_count)
+	{
+		this.complete_html=complete_html;
+		this.from_record_index=from_record_index;
+		this.record_count=record_count;
+	}
+
+//=============================================================================
 	public void formatRSImpl(ResultSet rs) throws Exception
 	{
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
+		int total_records=totalRecords(rs);
+		System.err.println("formatRSImpl: "+total_records+" record(s) in resultset. requested from: "+from_record_index+" count: "+record_count);
+
+		if(from_record_index>=0 && from_record_index<total_records)
+		{
+			rs.absolute(from_record_index);
+		}
+		if(record_count<0 || from_record_index>=total_records) //return empty set
+		{
+			record_count=-1; //all
+		}
 
 		if(complete_html)
 		{
@@ -48,8 +74,11 @@ public class HTMLRSFormatter extends CommonRSFormatter
 			writeOut("<th>" + rsmd.getColumnLabel(i) + "</th>\n");
 		}
 		writeOut("</tr>\n");
+
+		int rows_so_far=0;
+
 		 //row data
-		while (rs.next())
+		while ((record_count==-1 || rows_so_far<record_count) && rs.next())
 		{
 			writeOut("<tr>\n");
 			for (int i=1;i <=columnCount;i++)
@@ -57,7 +86,9 @@ public class HTMLRSFormatter extends CommonRSFormatter
 				writeOut("<td>"+rs.getString(i)+"</td>\n");
 			}
 			writeOut("</tr>\n");
+			rows_so_far++;
 		}
+
 		writeOut("</table>\n");
 
 		if(complete_html)
