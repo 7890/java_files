@@ -18,6 +18,9 @@ public abstract class CommonRSFormatter implements RSFormatter
 	public StringBuffer out;
 	public Writer os;
 
+        public int from_record_index=0;
+        public int record_count=-1; //no limit
+
 //=============================================================================
 	public String formatRS(ResultSet rs) throws Exception
 	{
@@ -35,6 +38,17 @@ public abstract class CommonRSFormatter implements RSFormatter
 		formatRSImpl(rs);
 		os.flush();
 //		os.close();
+	}
+
+
+//=============================================================================
+	public int totalRecords(ResultSet rs) throws Exception
+	{
+		int size=0;
+		rs.last();
+		size = rs.getRow();
+		rs.beforeFirst();
+		return size;
 	}
 
 //=============================================================================
