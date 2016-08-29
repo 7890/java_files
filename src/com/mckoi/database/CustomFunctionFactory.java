@@ -10,6 +10,8 @@ adds functions to be used in sql queries:
 	sha1_hash(string)
 	el(name,content,attrs)
 	a(name,value)
+	ahref(url,target,title)
+	opt(value,title)
 
 i.e.
 	select md5_hash(concat(field1,field2,'foo')) as md5,* from bar;
@@ -24,9 +26,11 @@ select
 		)
 	)
 ,*
-from tbl_file
+from tbl_file;
 
-select ahref(concat('http://foo.bar/',id),'_blank',displayname) from tbl_file
+select ahref(concat('http://foo.bar/',id),'_blank',displayname) from tbl_file;
+
+select opt(id,id) from tbl_file;
 
 /!\\ escaping not considered atm
 
@@ -50,6 +54,7 @@ public class CustomFunctionFactory extends FunctionFactory
 		addFunction(XMLElementFunction.function_name, XMLElementFunction.class);
 		addFunction(XMLAttributeFunction.function_name, XMLAttributeFunction.class);
 		addFunction(AHREFFunction.function_name, AHREFFunction.class);
+		addFunction(OptionFunction.function_name, OptionFunction.class);
 	}
 
 //========================================================================
@@ -323,5 +328,52 @@ public class CustomFunctionFactory extends FunctionFactory
 		}
 	}//end AHREFFunction
 
+//========================================================================
+//========================================================================
+	private static class OptionFunction extends AbstractFunction
+	{
+		final static String function_name="opt";
+//========================================================================
+		public OptionFunction(Expression[] params)
+		{
+			super(function_name, params);
+			if (parameterCount() != 2)
+			{
+				throw new RuntimeException("function '"+function_name+"' must have 2 arguments: value, title");
+			}
+		}
+
+//========================================================================
+		public TObject evaluate(GroupResolver group, VariableResolver resolver,
+			QueryContext context)
+		{
+			TObject ob0 = getParameter(0).evaluate(group, resolver, context);
+			TObject ob1 = getParameter(1).evaluate(group, resolver, context);
+
+			if (ob0.isNull() || ob0.getObject().toString().equals(""))
+			{
+				return null;
+			}
+			String title="";
+			if(ob1.isNull() || ob1.getObject().toString().equals(""))
+			{
+			}
+			else
+			{
+				title=ob1.getObject().toString();
+			}
+			return new TObject(
+				ob0.getTType(),
+				"<option value=\""+ob0.getObject().toString()+"\">"
+				+title+"</option>"
+			);
+		}
+
+//========================================================================
+		public TType returnTType()
+		{
+			return TType.STRING_TYPE;
+		}
+	}//end OptionFunction
 }//end class CustomFunctionFactory
 //EOF
