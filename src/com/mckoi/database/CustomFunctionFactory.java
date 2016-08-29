@@ -307,7 +307,7 @@ public class CustomFunctionFactory extends FunctionFactory
 				target=" target=\""+ob1.getObject().toString()+"\"";
 			}
 			String title="";
-			if(ob2.isNull() || ob1.getObject().toString().equals(""))
+			if(ob2.isNull() || ob2.getObject().toString().equals(""))
 			{
 			}
 			else
