@@ -29,6 +29,18 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 	{
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
+		int total_records=totalRecords(rs);
+
+		System.err.println("formatRSImpl: "+total_records+" record(s) in resultset. requested from: "+from_record_index+" count: "+record_count);
+
+		if(from_record_index>=0 && from_record_index<total_records)
+		{
+			rs.absolute(from_record_index);
+		}
+		if(record_count<0 || from_record_index>=total_records) //return empty set
+		{
+			record_count=-1; //all
+		}
 
 		StringBuffer out=new StringBuffer("");
 
@@ -54,8 +66,11 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 			writeOut("<div class=\"cell\">" + rsmd.getColumnLabel(i) + "</div>\n");
 		}
 		writeOut("</div>\n");
-		 //row data
-		while (rs.next())
+
+		int rows_so_far=0;
+
+		//print rows
+		while ((record_count==-1 || rows_so_far<record_count) && rs.next())
 		{
 			writeOut("<div class=\"row\">\n");
 			for (int i=1;i <=columnCount;i++)
@@ -63,6 +78,7 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 				writeOut("<div class=\"cell\">"+rs.getString(i)+"</div>\n");
 			}
 			writeOut("</div>\n");
+			rows_so_far++;
 		}
 		writeOut("</div>\n");
 

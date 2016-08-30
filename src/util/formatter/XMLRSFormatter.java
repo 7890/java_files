@@ -45,6 +45,18 @@ public class XMLRSFormatter extends CommonRSFormatter
 	{
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
+		int total_records=totalRecords(rs);
+
+		System.err.println("formatRSImpl: "+total_records+" record(s) in resultset. requested from: "+from_record_index+" count: "+record_count);
+
+		if(from_record_index>=0 && from_record_index<total_records)
+		{
+			rs.absolute(from_record_index);
+		}
+		if(record_count<0 || from_record_index>=total_records) //return empty set
+		{
+			record_count=-1; //all
+		}
 
 		if(complete_xml)
 		{
@@ -68,16 +80,21 @@ public class XMLRSFormatter extends CommonRSFormatter
 		String record_template=sb.toString();
 //		System.err.println("template: "+record_template);
 		Object[] values = new Object[columnCount];
-		while (rs.next())
+
+		int rows_so_far=0;
+
+		//print rows
+		while ((record_count==-1 || rows_so_far<record_count) && rs.next())
 		{
 			for (int i=1;i <=columnCount;i++)
 			{
 				values[i-1]=rs.getString(i);
-                        }
+			}
 
 			///escaping !
 
 			writeOut(MessageFormat.format(record_template, values));
+			rows_so_far++;
 		}
 
 		if(complete_xml)
