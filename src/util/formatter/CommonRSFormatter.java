@@ -40,7 +40,6 @@ public abstract class CommonRSFormatter implements RSFormatter
 //		os.close();
 	}
 
-
 //=============================================================================
 	public int totalRecords(ResultSet rs) throws Exception
 	{
@@ -78,6 +77,31 @@ public abstract class CommonRSFormatter implements RSFormatter
 			}
 		}
 		reader.close();
+	}
+
+//=============================================================================
+	public void handleLimits(ResultSet rs) throws Exception
+	{
+		int total_records=totalRecords(rs);
+
+		System.err.println("formatRSImpl: "+total_records+" record(s) in resultset. requested from: "+from_record_index+" count: "+record_count);
+
+		//if from_record_index within reasonable range, seek to index
+		if(from_record_index>=0 && from_record_index<total_records)
+		{
+			rs.absolute(from_record_index);
+		}
+		//record_count < 0 means no limit on count
+		if(record_count<0)
+		{
+			record_count=-1; //all
+		}
+		//condition that can only result in an empty set
+		if(from_record_index>=total_records)
+		{
+			from_record_index=0;
+			record_count=0;
+		}
 	}
 
 //=============================================================================

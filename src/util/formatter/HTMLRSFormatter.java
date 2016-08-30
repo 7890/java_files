@@ -42,19 +42,9 @@ public class HTMLRSFormatter extends CommonRSFormatter
 //=============================================================================
 	public void formatRSImpl(ResultSet rs) throws Exception
 	{
+		handleLimits(rs);
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int columnCount = rsmd.getColumnCount();
-		int total_records=totalRecords(rs);
-		System.err.println("formatRSImpl: "+total_records+" record(s) in resultset. requested from: "+from_record_index+" count: "+record_count);
-
-		if(from_record_index>=0 && from_record_index<total_records)
-		{
-			rs.absolute(from_record_index);
-		}
-		if(record_count<0 || from_record_index>=total_records) //return empty set
-		{
-			record_count=-1; //all
-		}
 
 		if(complete_html)
 		{
