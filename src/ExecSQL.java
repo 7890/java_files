@@ -27,6 +27,8 @@ public class ExecSQL
 	public static String db_password = "admin";
 
 	public static String formatter_class="util.formatter.CSVRSFormatter";
+
+	public static boolean continue_on_error=false;
 	//===end configurable parameters
 
 	private static Connection db_connection;
@@ -75,7 +77,17 @@ public class ExecSQL
 				System.err.println("/!\\ error (bogus SQL statement?)");
 				System.err.println(errorSepBegin+"\n"+e.getMessage()+"\n"+errorSepEnd);
 				e.printStackTrace();
-				System.err.println("reading next statement from stdin now:");
+
+				if(continue_on_error)
+				{
+					System.err.println("reading next statement from stdin now:");
+				}
+				else
+				{
+					close();
+					System.err.println("ExecSQL finished with errors.");
+					System.exit(1);
+				}
 			}
 		}
 
