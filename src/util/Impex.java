@@ -29,6 +29,7 @@
  */
 //package com.mckoi.tools;
 //https://mckoi.com/database/maillist/msg03477.html
+//to do: replace command file with .properties file
 
 package util;
 
@@ -64,7 +65,13 @@ public class Impex extends Object {
    * The JDBC Connection we have established to the server.
    */
   private static Connection connection;
-  
+
+
+  //if import data will end in a table with an id that is auto-incremented (NEXTVAL(sequence_name)):
+  //create prepared statement using given id column name and id sequence name
+  private String idColName=null;
+  private String idSeqName=null;
+
   /**
   Constructor
   */
@@ -192,6 +199,7 @@ public class Impex extends Object {
 
       String qtest = qtext.trim().toLowerCase();
 
+//=============================================================================
       if (qtest.startsWith("export")) {
 
         // " export table filename "
@@ -249,9 +257,14 @@ public class Impex extends Object {
 
 	return;
 
+//=============================================================================
       } else if (qtest.startsWith("import")) {
 
         // "import table filename "
+
+	//check whether or not there is an id column
+	boolean hasId=(idColName!=null && !idColName.equals("") && idSeqName!=null && !idSeqName.equals(""));
+	//System.err.println(hasId+" "+idColName+" "+idSeqName);
 
         String linesep = System.getProperty("line.separator");
         StringTokenizer st = new StringTokenizer(qtext);
@@ -337,16 +350,33 @@ public class Impex extends Object {
 		csize = columns.size();
 		columnType = new int[csize];
 
-		insSql1 = "Insert into " + schema + "." + tablename + " (" + "\""+(String)columns.elementAt(0)+"\"";
-		insSql2 = " ) VALUES( ?";
+		insSql1 = "Insert into " + schema + "." + tablename + " (";
+		insSql2 = " ) VALUES( ";
 		String keyval;
 		columnType[0] = ((Integer)ctypes.elementAt(0)).intValue();
 
-		for (i=1;i<csize;i++) {
+		for (i=0;i<csize;i++) {
+
+		  //comma separating fields (starting after first field)
+		  if(i>0)
+		  {
+			insSql1 = insSql1 + ", ";
+			insSql2 = insSql2 + ", ";
+		  }
+
 		  keyval = (String)columns.elementAt(i);
 		  columnType[i] = ((Integer)ctypes.elementAt(i)).intValue();
-		  insSql1 = insSql1 + ", " + "\""+keyval+"\"";
-		  insSql2 = insSql2 + ", ?";
+		  insSql1 = insSql1 + "\""+keyval+"\"";
+
+		  //auto increment
+		  if(hasId && keyval.equals(idColName))
+		  {
+			insSql2 = insSql2 + "NEXTVAL('"+idSeqName+"')";
+		  }
+		  else
+		  {
+			insSql2 = insSql2 + "?";
+		  }
 		}
 		insSql1 = insSql1 + insSql2 + ")";
 
@@ -358,11 +388,11 @@ public class Impex extends Object {
 	        return;
 	      }
 
-              System.err.println(insSql1);
+//======================================
+              System.err.println("prepared statement: "+insSql1);
 
 	      // Build a prepared statement with the right number of ?s
 	      pstmt = connection.prepareStatement( insSql1 );
-
 
 	      System.err.println("Inserting data from " + filename + " to table " + schema + "." + tablename );
 	      // System.err.println("SQL is " + insSql1 );
@@ -391,11 +421,22 @@ public class Impex extends Object {
 
 		count++;
 
+		int off=0;
+
 		// Set each field by type; even more horrid hack - only uses setString() !
 		int ic = 0;
 		try {
 		  for (i=0;i<csize;i++) {
-		    ic = i+1;
+
+		    String colname=(String)columns.elementAt(i);
+		    if(hasId && colname.equals(idColName))
+		    {
+			//ignore metadata for id column, no need to set value explicitely
+			off=1;
+			continue;
+		    }
+
+		    ic = i+1-off; ///
 		    switch( columnType[i] ) {
 		      case java.sql.Types.BIGINT:
 		      case java.sql.Types.BINARY:
@@ -454,6 +495,7 @@ public class Impex extends Object {
 	          return;
 		}
 
+//======================================
 		rcode = pstmt.executeUpdate();
 
 		if (rcode == 1) {
@@ -478,7 +520,9 @@ public class Impex extends Object {
 
 	    } catch(Exception e) {
 	      err = "Can't import table " + tablename + " from file " + filename + " Exception " + e;
-	      //e.printStackTrace();
+
+	      e.printStackTrace();
+
 	      System.err.println( err );
 	      System.err.println("Sqlstring was " + sqlstring );
               e.printStackTrace();
@@ -495,6 +539,15 @@ public class Impex extends Object {
 
 	return;
 
+//=============================================================================
+      } else if (qtest.startsWith("id_col ")) {
+	idColName=qtext.substring(qtext.indexOf(" ")).trim();
+
+//=============================================================================
+      } else if (qtest.startsWith("id_seq ")) {
+	idSeqName=qtext.substring(qtext.indexOf(" ")).trim();
+
+//=============================================================================
       } else  {
 	System.err.println("Unrecognised command: " + qtext);
       }
@@ -684,7 +737,6 @@ public class Impex extends Object {
     } else {
       res = new String("");
     }
-
     return res;
   }
   
