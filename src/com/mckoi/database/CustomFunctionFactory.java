@@ -12,6 +12,7 @@ adds functions to be used in sql queries:
 	a(name,value)
 	ahref(url,target,title)
 	opt(value,title)
+	btn(value,onclick)
 
 i.e.
 	select md5_hash(concat(field1,field2,'foo')) as md5,* from bar;
@@ -55,6 +56,7 @@ public class CustomFunctionFactory extends FunctionFactory
 		addFunction(XMLAttributeFunction.function_name, XMLAttributeFunction.class);
 		addFunction(AHREFFunction.function_name, AHREFFunction.class);
 		addFunction(OptionFunction.function_name, OptionFunction.class);
+		addFunction(ButtonFunction.function_name, ButtonFunction.class);
 	}
 
 //========================================================================
@@ -375,5 +377,55 @@ public class CustomFunctionFactory extends FunctionFactory
 			return TType.STRING_TYPE;
 		}
 	}//end OptionFunction
+
+//========================================================================
+//========================================================================
+	private static class ButtonFunction extends AbstractFunction
+	{
+		final static String function_name="btn";
+//========================================================================
+		public ButtonFunction(Expression[] params)
+		{
+			super(function_name, params);
+			if (parameterCount() != 2)
+			{
+				throw new RuntimeException("function '"+function_name+"' must have 2 arguments: html button attributes: value, onclick");
+			}
+		}
+
+//========================================================================
+		public TObject evaluate(GroupResolver group, VariableResolver resolver,
+			QueryContext context)
+		{
+			TObject ob0 = getParameter(0).evaluate(group, resolver, context);
+			TObject ob1 = getParameter(1).evaluate(group, resolver, context);
+
+			if (ob0.isNull() || ob0.getObject().toString().equals(""))
+			{
+				return null;
+			}
+			String title="";
+			if(ob1.isNull() || ob1.getObject().toString().equals(""))
+			{
+			}
+			else
+			{
+				title=ob1.getObject().toString();
+			}
+
+			//<input type="button" value="foo" onclick="submitForm($id(\'sql_query_form\'));"/>
+			return new TObject(
+				ob0.getTType(),
+				"<input type=\"button\" value=\""+ob0.getObject().toString()+"\" onclick=\""+ob1.getObject().toString()+"\" />"
+			);
+		}
+
+//========================================================================
+		public TType returnTType()
+		{
+			return TType.STRING_TYPE;
+		}
+	}//end ButtonFunction
+
 }//end class CustomFunctionFactory
 //EOF
