@@ -10,7 +10,7 @@ adds functions to be used in sql queries:
 	sha1_hash(string)
 	el(name,content,attrs)
 	a(name,value)
-	ahref(url,target,title)
+	ahref(url,title,target,onclick)
 	opt(value,title)
 	btn(value,onclick)
 
@@ -29,7 +29,7 @@ select
 ,*
 from tbl_file;
 
-select ahref(concat('http://foo.bar/',id),'_blank',displayname) from tbl_file;
+select ahref(concat('http://foo.bar/',id),displayname,'_blank',null) from tbl_file;
 
 select opt(id,id) from tbl_file;
 
@@ -282,9 +282,9 @@ public class CustomFunctionFactory extends FunctionFactory
 		public AHREFFunction(Expression[] params)
 		{
 			super(function_name, params);
-			if (parameterCount() != 3)
+			if (parameterCount() != 4)
 			{
-				throw new RuntimeException("function '"+function_name+"' must have 3 arguments: url, target, title");
+				throw new RuntimeException("function '"+function_name+"' must have 4 arguments: url, title, target, onclick");
 			}
 		}
 
@@ -295,30 +295,39 @@ public class CustomFunctionFactory extends FunctionFactory
 			TObject ob0 = getParameter(0).evaluate(group, resolver, context);
 			TObject ob1 = getParameter(1).evaluate(group, resolver, context);
 			TObject ob2 = getParameter(2).evaluate(group, resolver, context);
+			TObject ob3 = getParameter(3).evaluate(group, resolver, context);
 
 			if (ob0.isNull() || ob0.getObject().toString().equals(""))
 			{
 				return null;
 			}
-			String target="";
+			String title="";
 			if(ob1.isNull() || ob1.getObject().toString().equals(""))
 			{
 			}
 			else
 			{
-				target=" target=\""+ob1.getObject().toString()+"\"";
+				title=ob1.getObject().toString();
 			}
-			String title="";
+			String target="";
 			if(ob2.isNull() || ob2.getObject().toString().equals(""))
 			{
 			}
 			else
 			{
-				title=ob2.getObject().toString();
+				target=" target=\""+ob2.getObject().toString()+"\"";
+			}
+			String onclick="";
+			if(ob3.isNull() || ob3.getObject().toString().equals(""))
+			{
+			}
+			else
+			{
+				onclick=" onclick=\""+ob3.getObject().toString()+"\"";
 			}
 			return new TObject(
 				ob0.getTType(),
-				"<a href=\""+ob0.getObject().toString()+"\""+target+">"
+				"<a href=\""+ob0.getObject().toString()+"\""+target+onclick+">"
 				+title+"</a>"
 			);
 		}
