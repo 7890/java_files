@@ -21,6 +21,8 @@ public class AddFileToDb implements ProcessFileHook
 	private String propertiesFileUri="AddFileToDb.properties";
 
 	//===configurable parameters (here: default values)
+	public String jdbc_impl_class="com.mckoi.JDBCDriver";
+
 	public String db_connection_url = "jdbc:mckoi://localhost/";
 //	public String db_connection_url = "jdbc:mckoi:local://./db.conf"
 
@@ -386,7 +388,7 @@ public class AddFileToDb implements ProcessFileHook
 	private void connectDb() throws Exception
 	{
 		//register the Mckoi JDBC driver
-		Class.forName("com.mckoi.JDBCDriver").newInstance();
+		Class.forName(jdbc_impl_class).newInstance();
 		System.err.println("connecting to database...");
 		db_connection = DriverManager.getConnection(db_connection_url, db_username, db_password);
 	}
