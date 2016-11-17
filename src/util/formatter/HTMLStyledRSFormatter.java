@@ -13,6 +13,9 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 {
 	public boolean complete_html=true;
 
+	public boolean numberCols=false;
+	public boolean numberRows=false;
+
 //=============================================================================
 	public HTMLStyledRSFormatter()
 	{
@@ -50,9 +53,21 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 
 		//table header
 		writeOut("<div class=\"row header\">\n");
+		if(numberRows)
+		{
+			writeOut("<div class=\"cell\">#</div>\n");
+		}
+
 		for (int i=1; i<=columnCount;i++)
 		{
-			writeOut("<div class=\"cell\">" + rsmd.getColumnLabel(i) + "</div>\n");
+			if(numberCols)
+			{
+				writeOut("<div class=\"cell\">[" + i + "]" + rsmd.getColumnLabel(i) + "</div>\n");
+			}
+			else
+			{
+				writeOut("<div class=\"cell\">" + rsmd.getColumnLabel(i) + "</div>\n");
+			}
 		}
 		writeOut("</div>\n");
 
@@ -62,6 +77,10 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 		while ((record_count==-1 || rows_so_far<record_count) && rs.next())
 		{
 			writeOut("<div class=\"row\">\n");
+			if(numberRows)
+			{
+				writeOut("<div class=\"cell\">#</div>\n");
+			}
 			for (int i=1;i <=columnCount;i++)
 			{
 				writeOut("<div class=\"cell\">"+rs.getString(i)+"</div>\n");
