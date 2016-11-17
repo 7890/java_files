@@ -63,7 +63,7 @@ public class ExecSQL
 		rsf=((RSFormatter)cons.newInstance());
 
 		System.err.println("unrequested mini how-to:");
-		System.err.println("lines starting with '--' are ignored (comments).");
+		System.err.println("lines starting with '--', '//' or '#' are ignored (comments).");
 		System.err.println("statements must end with ';'.");
 		System.err.println("interactive session can be closed with 'ctrl+d'.");
 		System.err.println("reading SQL statements from stdin now:");
@@ -92,7 +92,6 @@ public class ExecSQL
 				}
 			}
 		}
-
 		close();
 		System.err.println("ExecSQL finished.");
 	}
@@ -113,14 +112,28 @@ public class ExecSQL
 		String line="";
 		while((line=reader.readLine()) != null)
 		{
-			sb.append(line+"\n");
-			//assume comment
-			if(line.startsWith("--"))
+			//remove leading/trailing whitespace
+			line.trim();
+			//somehow trim() won't remove tabs (?)
+			//poor way to remove leading tabs in order to check if its a comment (indented comment)
+			try{while(line.substring(0,1).equals("\t")){
+				line=line.substring(1,line.length());
+			}}catch(Exception e){}
+
+			//final trimmed lined
+//			System.err.println("["+line+"]");
+
+			//test if comment
+			if(line.startsWith("--") || line.startsWith("//") || line.startsWith("#"))
 			{
 				continue;
 			}
-			//assume end of one sql statement
-			else if(line.endsWith(";"))
+
+			//not a comment, adding to stringbuffer
+			sb.append(line+"\n");
+
+			//assume end of one sql statement. execute stringbuffer's sql, create new one for next
+			if(line.endsWith(";"))
 			{
 				//System.err.println("==================");
 				//send to db
@@ -147,20 +160,34 @@ public class ExecSQL
 	{
 		System.err.println("executing query...");
 //		System.err.println(sql_statement);
-		ResultSet rs=db_connection.createStatement().executeQuery(sql_statement);
+//		ResultSet rs=db_connection.createStatement().executeQuery(sql_statement);
+		//JDBC implementations seem to behave differently.
+		//some accept manipulative statements to be executed via executeQuery(),
+		//others require executeUpdate().
+		//using execute() and afterwards testing if there is a resultset seems
+		//to work for all cases
 
-		ResultSetMetaData rsmd = rs.getMetaData();
-		int columnCount = rsmd.getColumnCount();
-
-		//csv.formatRS(rs);
-		//csv.formatRS(rs,osw);
-		rsf.formatRS(rs,osw);
-		osw.flush();
-
-		//don't close osw here
-
+		Statement stm=db_connection.createStatement();
+		boolean is_rs=stm.execute(sql_statement);
+		if(is_rs)
+		{
+			ResultSet rs=stm.getResultSet();
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+			//csv.formatRS(rs);
+			//csv.formatRS(rs,osw);
+			rsf.formatRS(rs,osw);
+			osw.flush();
+			//don't close osw here
+			//close result set
+			rs.close();
+		}//end if execute() returned a ResultSet
+		else
+		{
+			System.out.println("result;");
+			System.out.println(stm.getUpdateCount()+";");
+		}
 		System.err.println("done.");
-		rs.close();
 	}
 }//end class ExecSQL
 //EOF
