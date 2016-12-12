@@ -33,7 +33,7 @@ public class PropertiesSingleRecordFormatter extends CommonRSFormatter
 		{
 			for(int i=1;i<=columnCount;i++)
 			{
-				writeOut(nativeToAscii(rsmd.getColumnName(i))+"=");
+				writeOut(nativeToAscii(rsmd.getColumnLabel(i))+"=");
 
 				//int coltype=rsmd.getColumnType(i);
 

@@ -45,7 +45,9 @@ public class JSONRSFormatter extends CommonRSFormatter
 			{
 				int coltype=rsmd.getColumnType(i);
 
-				writeOut("\""+escapeStringForJSON(rsmd.getColumnName(i))+"\": ");
+//				writeOut("\""+escapeStringForJSON(rsmd.getColumnName(i))+"\": ");
+				//use alias/label (... as xxx) if there is one, otherwise column name
+				writeOut("\""+escapeStringForJSON(rsmd.getColumnLabel(i))+"\": ");
 
 				String val=rs.getString(i);
 				if(val==null)

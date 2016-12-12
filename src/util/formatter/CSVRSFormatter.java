@@ -36,7 +36,9 @@ public class CSVRSFormatter extends CommonRSFormatter
 		{
 			for(int i=1;i<=columnCount;i++)
 			{
-				writeOut(rsmd.getColumnName(i)+";");
+//				writeOut(rsmd.getColumnName(i)+";");
+				//use alias/label (falls back to columnname)
+				writeOut(rsmd.getColumnLabel(i)+";");
 			}
 			writeOut("\n");
 		}
