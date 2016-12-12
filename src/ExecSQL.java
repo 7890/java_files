@@ -61,13 +61,13 @@ public class ExecSQL
 		Class<?> c = Class.forName(formatter_class);
 		Constructor<?> cons = c.getConstructor();
 		rsf=((RSFormatter)cons.newInstance());
-
+/*
 		System.err.println("unrequested mini how-to:");
 		System.err.println("lines starting with '--', '//' or '#' are ignored (comments).");
 		System.err.println("statements must end with ';'.");
 		System.err.println("interactive session can be closed with 'ctrl+d'.");
 		System.err.println("reading SQL statements from stdin now:");
-
+*/
 		//don't throw up errors upwards for bogus statements (i.e. for interactive stdin session)
 		while(1==1)
 		{
