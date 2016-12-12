@@ -18,8 +18,10 @@ public abstract class CommonRSFormatter implements RSFormatter
 	public StringBuffer out;
 	public Writer os;
 
-        public int from_record_index=0;
-        public int record_count=-1; //no limit
+	public int from_record_index=0;
+	public int record_count=-1; //no limit
+
+	public int total_records=0;
 
 //=============================================================================
 	public String formatRS(ResultSet rs) throws Exception
@@ -82,7 +84,7 @@ public abstract class CommonRSFormatter implements RSFormatter
 //=============================================================================
 	public void handleLimits(ResultSet rs) throws Exception
 	{
-		int total_records=totalRecords(rs);
+		total_records=totalRecords(rs);
 
 		System.err.println("formatRSImpl: "+total_records+" record(s) in resultset. requested from: "+from_record_index+" count: "+record_count);
 
