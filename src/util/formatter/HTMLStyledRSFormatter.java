@@ -5,6 +5,8 @@ import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
+import java.sql.Types;
+
 //tb/1608
 
 //=============================================================================
@@ -47,43 +49,64 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 			writeOutFile("./resources/table_style.css");
 			writeOut("</style>\n");
 			writeOut("</head>\n");
+			writeOut("<body>\n"); ////
 		}
 
 		writeOut("<div class=\"table\">\n");
 
 		//table header
 		writeOut("<div class=\"row header\">\n");
+
 		if(numberRows)
 		{
-			writeOut("<div class=\"cell\">#</div>\n");
+			writeOut("<div class=\"cell\">[#]</div>\n");
 		}
+
+		String prefix="";
 
 		for (int i=1; i<=columnCount;i++)
 		{
 			if(numberCols)
 			{
-				writeOut("<div class=\"cell\">[" + i + "]" + rsmd.getColumnLabel(i) + "</div>\n");
+				prefix="[" + (i-1) + "] ";
 			}
-			else
-			{
-				writeOut("<div class=\"cell\">" + rsmd.getColumnLabel(i) + "</div>\n");
-			}
+			writeOut("<div class=\"cell\">"+prefix + rsmd.getColumnLabel(i) + "</div>\n");
 		}
 		writeOut("</div>\n");
 
 		int rows_so_far=0;
 
+		String div_cell_class="";
+
 		//print rows
 		while ((record_count==-1 || rows_so_far<record_count) && rs.next())
 		{
 			writeOut("<div class=\"row\">\n");
+
 			if(numberRows)
 			{
-				writeOut("<div class=\"cell\">#</div>\n");
+				writeOut("<div class=\"cell\">"+ (from_record_index+rows_so_far) +"</div>\n");
 			}
+
 			for (int i=1;i <=columnCount;i++)
 			{
-				writeOut("<div class=\"cell\">"+rs.getString(i)+"</div>\n");
+				//align numbers to the right side
+				div_cell_class="cell";
+				int coltype=rsmd.getColumnType(i);
+				if(	coltype==Types.BIGINT
+					||coltype==Types.DECIMAL
+					||coltype==Types.DOUBLE
+					||coltype==Types.FLOAT
+					||coltype==Types.INTEGER
+					||coltype==Types.NUMERIC
+					||coltype==Types.REAL
+					||coltype==Types.SMALLINT
+					||coltype==Types.TINYINT
+				)
+				{
+					div_cell_class="cell cell-numeric";
+				}
+				writeOut("<div class=\""+div_cell_class+"\">"+rs.getString(i)+"</div>\n");
 			}
 			writeOut("</div>\n");
 			rows_so_far++;
@@ -92,6 +115,9 @@ public class HTMLStyledRSFormatter extends CommonRSFormatter
 
 		if(complete_html)
 		{
+			///eval($id("div-eval-id").innerHTML);
+			writeOut("<div id=\"div-eval-id\" style=\"visibility:hidden\">var TOTAL_RECORDS="+total_records+";</div>\n");
+
 			writeOut("</body>\n");
 			writeOut("</html>\n");
 		}
