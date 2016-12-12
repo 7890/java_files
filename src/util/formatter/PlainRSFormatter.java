@@ -34,7 +34,7 @@ public class PlainRSFormatter extends CommonRSFormatter
 
 		if(enclose_xml)
 		{
-			writeOut("</result>\n");
+			writeOut("<result>\n");
 		}
 
 		//omit header row
