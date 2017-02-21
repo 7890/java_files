@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.Vector;
@@ -19,6 +21,9 @@ import java.util.Vector;
 public class LProps
 {
 	private final static boolean PROCESS_INSTRUCTIONS=true;
+
+	private final static String PROPERTIES_READ_ENCODING="UTF-8";
+	private final static String PROPERTIES_STORE_ENCODING="UTF-8";
 
 	public LProps(){}
 
@@ -47,6 +52,20 @@ public class LProps
 				{
 					sb.append(field.getName()+"="+field.get(configurable_object)+nl);
 				}
+
+				else if(ctype==java.util.Vector.class)
+				{
+					sb.append(field.getName()+"=");
+					Vector v=(Vector)field.get(configurable_object);
+					for(int i=0;i<v.size();i++)
+					{
+						sb.append(v.get(i));
+						if(i<v.size()-1)
+						{
+							sb.append(",");
+						}
+					}
+				}
 			}
 			return sb.toString();
 		}
@@ -65,7 +84,13 @@ public class LProps
 		try
 		{
 			props.load(new StringReader(all));
-			getOrderedProperties(props).store(new FileOutputStream(new File(configfile_uri)), null);
+			getOrderedProperties(props).store(
+				new OutputStreamWriter(
+					new FileOutputStream(
+						new File(configfile_uri)
+					)
+					,PROPERTIES_STORE_ENCODING)
+				,null);
 			return true;
 		}
 		catch(Exception e){e.printStackTrace();}
@@ -210,7 +235,7 @@ public class LProps
 			{
 				return null;
 			}
-			props.load(is);
+			props.load(new InputStreamReader(is,PROPERTIES_READ_ENCODING));
 			if(props==null)
 			{
 				return null;
@@ -261,9 +286,14 @@ public class LProps
 		try
 		{
 			props.setProperty(key, ""+val);
-//			getOrderedProperties(props).store(System.out, null);
 			///OVERWRITE ORIGINAL FILE. LOOSING ALL COMMENTS. KEYS IN ALPHABETIC ORDER.
-			getOrderedProperties(props).store(new FileOutputStream(new File(configfile_uri)), null);
+			getOrderedProperties(props).store(
+				new OutputStreamWriter(
+					new FileOutputStream(
+						new File(configfile_uri)
+					)
+					,PROPERTIES_STORE_ENCODING)
+				,null);
 //			System.out.println(key+"="+get(configfile_uri,key));
 //			print(configfile_uri);
 			return true;
